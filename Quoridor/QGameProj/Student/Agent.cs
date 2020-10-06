@@ -13,34 +13,37 @@ class Agent : BaseAgent
 
     public override Drag SökNästaDrag(SpelBräde bräde) 
     {
-        //Så ni kan kolla om systemet fungerar!
-        Spelare jag = bräde.spelare[0];
-        Point playerPos = jag.position;
-        Drag drag = new Drag();
+        return !(bräde.avanceradeRegler) ? Normal(bräde) : Advanced(bräde);
+    }
 
-        if (jag.antalVäggar == 10) 
-        {
-            drag.typ = Typ.Horisontell;
-            drag.point = new Point(3, 6);
-        }
-        else if (jag.antalVäggar == 9) 
-        {
-            drag.typ = Typ.Horisontell;
-            drag.point = new Point(5, 6);
-        }
-        else 
-        {
-            drag.typ = Typ.Flytta;
-            drag.point = playerPos;
-            drag.point.Y++;
-        }
-        return drag;
+    private Drag Normal(SpelBräde bräde)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    private Drag Advanced(SpelBräde bräde)
+    {
+        Spelare player = bräde.spelare[0];
+        Spelare opponent = bräde.spelare[1];
+
+        Point playerPos = player.position;
+        Point opponentPos = opponent.position;
+        
+        Drag move = new Drag();
+
+        A_Star pathfinding = new A_Star();
+
+
+
+
+        Console.WriteLine();
+
+        return move;
     }
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)
     {
-        //Om draget ni försökte göra var felaktigt så kommer ni hit
-        System.Diagnostics.Debugger.Break();    //Brytpunkt
+        System.Diagnostics.Debugger.Break();
         return SökNästaDrag(bräde);
     }
 }
