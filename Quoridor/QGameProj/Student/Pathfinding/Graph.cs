@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 class Graph
 {
     public List<Vertex> Vertices { get; private set; }
     public List<Edge> Edges { get; private set; }
-
-    public int VerticesCount => Vertices.Count;
-    public int EdgesCount => Edges.Count;
 
     private SpelBräde board;
 
@@ -23,6 +16,12 @@ class Graph
         Vertices = new List<Vertex>();
 
         GenerateGraph();
+    }
+
+    public Vertex AtPos(int x, int y)
+    {
+        int width = board.horisontellaLångaVäggar.GetLength(0) + 1;
+        return Vertices[x + y * width];
     }
 
     private void GenerateGraph()
@@ -49,8 +48,8 @@ class Graph
                 {
                     if (WithinBounds((x + i), y, boardLengthX, boardLengthY))
                     {
-                        Vertex vertex = AtPos(new Point(x, y), boardLengthX);
-                        Vertex neighbour = AtPos(new Point(x + i, y), boardLengthX);
+                        Vertex vertex = AtPos(x, y);
+                        Vertex neighbour = AtPos(x + i, y);
 
                         int xPos = (wallLengthX - 1) - x;
                         int yPos = y;
@@ -59,7 +58,7 @@ class Graph
                         if (i < 0 && x > 0) xPos++;
                         if (y > 0) yPos--;
 
-                        bool addEdge = true;
+                        bool addEdge = true; // Don't add edge if wall between vertices
                         for (int l = 0; l < 2; l++) // Length of individual wall
                         {
                             if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
@@ -77,15 +76,15 @@ class Graph
                 {
                     if (WithinBounds(x, (y + j), boardLengthX, boardLengthY))
                     {
-                        Vertex vertex = AtPos(new Point(x, y), boardLengthX);
-                        Vertex neighbour = AtPos(new Point(x, y + j), boardLengthX);
+                        Vertex vertex = AtPos(x, y);
+                        Vertex neighbour = AtPos(x, y + j);
 
                         int xPos = (wallLengthX - 1) - x;
                         int yPos = y;
 
                         if (j < 0 && y > 0) yPos--;
 
-                        bool addEdge = true;
+                        bool addEdge = true; // Don't add edge if wall between vertices
                         for (int l = 0; l < 2; l++) // Length of individual wall
                         {
                             if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
@@ -101,32 +100,6 @@ class Graph
                 }
             }
         }
-
-        for (int y = 0; y < boardLengthY; y++) // Add all vertices
-        {
-            for (int x = 0; x < boardLengthX; x++)
-            {
-                Console.Write("[" + x + ", " + y + "] " + AtPos(new Point(x, y), boardLengthX).EdgeWeight() + " ");
-            }
-            Console.WriteLine("");
-        }
-    }
-
-    public void AddEdge(Edge edge)
-    {
-        Edges.Add(edge);
-    }
-
-    public float DistanceTo(Vertex from, Vertex to)
-    {
-        return (float)Math.Sqrt(
-            Math.Pow(from.Position.X - to.Position.X, 2) + 
-            Math.Pow(from.Position.Y - to.Position.Y, 2));
-    }
-
-    private Vertex AtPos(Point pos, int width)
-    {
-        return Vertices[pos.X + pos.Y * width];
     }
 
     private bool WithinBounds(int x, int y, float boundX, float boundY)
