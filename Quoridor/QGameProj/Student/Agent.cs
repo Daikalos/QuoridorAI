@@ -28,15 +28,16 @@ class Agent : BaseAgent
 
         Point playerPos = player.position;
         Point opponentPos = opponent.position;
-        
+
         Drag move = new Drag();
 
-        A_Star pathfinding = new A_Star();
+        A_Star pathfinder = new A_Star(bräde);
 
+        move.typ = Typ.Flytta;
+        move.point = playerPos;
+        move.point.Y++;
 
-
-
-        Console.WriteLine();
+        Console.ReadLine();
 
         return move;
     }

@@ -7,15 +7,18 @@ using Microsoft.Xna.Framework;
 
 class Edge
 {
-    private Vertex from;
-    private Vertex to;
+    public Vertex From { get; private set; }
+    public Vertex To { get; private set; }
 
-    private float weight;
+    public float Weight { get; private set; }
 
     public Edge(Vertex from, Vertex to, float weight)
     {
-        this.from = from;
-        this.to = to;
-        this.weight = weight;
+        From = from;
+        To = to;
+        Weight = weight;
+
+        from.AddNeighbour(to);
+        from.AddEdge(this);
     }
 }
