@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System;
 
 class Graph
 {
@@ -8,6 +9,12 @@ class Graph
 
     private SpelBräde board;
 
+    int boardLengthX;
+    int boardLengthY;
+
+    int wallLengthX;
+    int wallLengthY;
+
     public Graph(SpelBräde board)
     {
         this.board = board;
@@ -15,23 +22,22 @@ class Graph
         Edges = new List<Edge>();
         Vertices = new List<Vertex>();
 
+        boardLengthX = board.horisontellaLångaVäggar.GetLength(0) + 1;
+        boardLengthY = board.horisontellaLångaVäggar.GetLength(1) + 1;
+
+        wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
+        wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
+
         GenerateGraph();
     }
 
     public Vertex AtPos(int x, int y)
     {
-        int width = board.horisontellaLångaVäggar.GetLength(0) + 1;
-        return Vertices[x + y * width];
+        return Vertices[x + y * boardLengthX];
     }
 
     private void GenerateGraph()
-    {
-        int boardLengthX = board.horisontellaLångaVäggar.GetLength(0) + 1;
-        int boardLengthY = board.horisontellaLångaVäggar.GetLength(1) + 1;
-
-        int wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
-        int wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
-        
+    {    
         for (int y = 0; y < boardLengthY; y++) // Add all vertices
         {
             for (int x = 0; x < boardLengthX; x++)
@@ -51,12 +57,10 @@ class Graph
                         Vertex vertex = AtPos(x, y);
                         Vertex neighbour = AtPos(x + i, y);
 
-                        int xPos = (wallLengthX - 1) - x;
-                        int yPos = y;
+                        int xPos = x;
+                        int yPos = y - 1;
 
-                        // It just works
-                        if (i < 0 && x > 0) xPos++;
-                        if (y > 0) yPos--;
+                        if (i < 0 && x > 0) xPos--;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
                         for (int l = 0; l < 2; l++) // Length of individual wall
@@ -79,7 +83,7 @@ class Graph
                         Vertex vertex = AtPos(x, y);
                         Vertex neighbour = AtPos(x, y + j);
 
-                        int xPos = (wallLengthX - 1) - x;
+                        int xPos = x - 1;
                         int yPos = y;
 
                         if (j < 0 && y > 0) yPos--;
@@ -100,6 +104,32 @@ class Graph
                 }
             }
         }
+
+        /*
+        for (int y = 0; y < boardLengthY; y++)
+        {
+            for (int x = boardLengthX - 1; x >= 0; x--)
+            {
+                Console.Write("[" + x + ", " + y + "] ");
+                AtPos(x, y).GetDir();
+                Console.Write(" ");
+            }
+            Console.WriteLine("");
+        }
+        Console.WriteLine("");
+        for (int y = 0; y < wallLengthY; y++)
+        {
+            for (int x = wallLengthX - 1; x >= 0; x--)
+            {
+                Console.Write("[" + x + ", " + y + "] " + board.horisontellaLångaVäggar[x, y]);
+            }
+            Console.WriteLine("");
+        }*/
+    }
+
+    public void ExamineBoardState()
+    {
+
     }
 
     private bool WithinBounds(int x, int y, float boundX, float boundY)

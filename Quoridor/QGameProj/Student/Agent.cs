@@ -38,11 +38,17 @@ class Agent : BaseAgent
         A_Star pathfinder = new A_Star(); // Use A_Star to find shortest path
 
         List<Vertex> path = pathfinder.pathTo(
-            graph.AtPos(boardWidth - playerPos.X, playerPos.Y),
-            graph.AtPos(boardWidth - opponentPos.X, opponentPos.Y));
+            graph.AtPos(playerPos.X, playerPos.Y),
+            graph.AtPos(opponentPos.X, opponentPos.Y));
+
+        if (path == null)
+        {
+            Console.WriteLine("NO PATH FOUND");
+            throw new System.ArgumentOutOfRangeException();
+        }
 
         move.typ = Typ.Flytta;
-        move.point = new Point(boardWidth - path[0].Position.X, path[0].Position.Y);
+        move.point = path[0].Position;
 
         return move;
     }

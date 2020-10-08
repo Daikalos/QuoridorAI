@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System;
 
 class Vertex
 {
@@ -27,6 +28,26 @@ class Vertex
         G = float.MaxValue;
         H = float.MaxValue;
     }
+
+    /*
+    public void GetDir()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (i < Edges.Count)
+            {
+                Point off = Edges[i].To.Position - Edges[i].From.Position;
+                if (off.X == 1) Console.Write("L");
+                if (off.X == -1) Console.Write("R");
+                if (off.Y == -1) Console.Write("U");
+                if (off.Y == 1) Console.Write("D");
+            }
+            else
+            {
+                Console.Write(" ");
+            }
+        }
+    }*/
 
     public void AddNeighbour(Vertex vertex)
     {
