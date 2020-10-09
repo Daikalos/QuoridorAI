@@ -35,20 +35,25 @@ class Graph
     {
         return Vertices[x + y * boardWidth];
     }
-
     public Vertex AtPos(Point pos)
     {
         return Vertices[pos.X + pos.Y * boardWidth];
     }
 
-    public bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
+    public static bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
     {
         return !(x < 0 || y < 0 || x >= boundsWidth || y >= boundsHeight);
     }
-
-    public bool WithinBounds(Point pos, float boundsWidth, float boundsHeight)
+    public static bool WithinBounds(Point pos, float boundsWidth, float boundsHeight)
     {
         return !(pos.X < 0 || pos.Y < 0 || pos.X >= boundsWidth || pos.Y >= boundsHeight);
+    }
+
+    public static float Distance(Vertex from, Vertex to)
+    {
+        return (float)Math.Sqrt(
+            Math.Pow(from.Position.X - to.Position.X, 2) +
+            Math.Pow(from.Position.Y - to.Position.Y, 2));
     }
 
     private void GenerateGraph()
@@ -56,7 +61,6 @@ class Graph
         AddVertices();
         AddEdges();
     }
-
     private void AddVertices()
     {
         for (int y = 0; y < boardHeight; y++) // Add all vertices
@@ -67,7 +71,6 @@ class Graph
             }
         }
     }
-
     private void AddEdges()
     {
         for (int y = 0; y < boardHeight; y++) // Add all edges

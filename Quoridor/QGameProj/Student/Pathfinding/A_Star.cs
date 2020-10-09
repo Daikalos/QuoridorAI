@@ -15,7 +15,7 @@ class A_Star
 
         current.G = 0;
 
-        Vertex closestEnd = end.OrderBy(v => Distance(start, v)).FirstOrDefault();
+        Vertex closestEnd = end.OrderBy(v => Graph.Distance(start, v)).FirstOrDefault(); // Which goal to prioritize search for
 
         while (open.Count > 0)
         {
@@ -37,7 +37,7 @@ class A_Star
                     if (gScore < neighbour.G)
                     {
                         neighbour.G = gScore;
-                        neighbour.H = gScore + Distance(neighbour, closestEnd);
+                        neighbour.H = gScore + Graph.Distance(neighbour, closestEnd);
 
                         neighbour.Parent = current;
 
@@ -48,7 +48,7 @@ class A_Star
             }
         }
 
-        return new List<Vertex>(); 
+        return new List<Vertex>(); // Return empty path if none is found
     } 
 
     private List<Vertex> FindPath(Vertex start, Vertex end) // Reconstruct path
@@ -65,12 +65,5 @@ class A_Star
         path.Reverse();
 
         return path;
-    }
-
-    private float Distance(Vertex from, Vertex to)
-    {
-        return (float)Math.Sqrt(
-            Math.Pow(from.Position.X - to.Position.X, 2) +
-            Math.Pow(from.Position.Y - to.Position.Y, 2));
     }
 }

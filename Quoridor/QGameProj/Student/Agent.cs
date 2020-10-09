@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 class Agent : BaseAgent 
 {
@@ -50,15 +51,17 @@ class Agent : BaseAgent
 
         // If desired position is on the opponents position
         if (desiredPos == opponentPos)
-            desiredPos = MoveOverOpponent(graph, playerPos, opponentPos);
+            desiredPos = MoveOverOpponent(graph, path, playerPos, opponentPos);
 
         move.typ = Typ.Flytta;
         move.point = desiredPos;
 
+        // PLACE WALL
+
         return move;
     }
 
-    private Point MoveOverOpponent(Graph graph, Point playerPos, Point opponentPos)
+    private Point MoveOverOpponent(Graph graph, List<Vertex> path, Point playerPos, Point opponentPos)
     {
         Point offset = opponentPos - playerPos;
         Point desiredPos = playerPos + offset;
@@ -76,20 +79,78 @@ class Agent : BaseAgent
         Vertex oppVertex = graph.AtPos(opponentPos);
 
         // If there is no path to desired position
-        if (!graph.WithinBounds(desiredPos, graph.boardWidth, graph.boardHeight) || !oppVertex.Neighbours.Contains(graph.AtPos(desiredPos)))
+        if (!Graph.WithinBounds(desiredPos, graph.boardWidth, graph.boardHeight) || !oppVertex.Neighbours.Contains(graph.AtPos(desiredPos)))
         {
-            // Set desired position to 'random' valid neighbour
+            List<Vertex> desVertices = new List<Vertex>();
+
+            // First see if we can move diagonally to one of opponents neighbours
+            foreach (Vertex neighbour in oppVertex.Neighbours)
+            {
+                if (neighbour != plyVertex)
+                {
+                    desVertices.Add(neighbour);
+                }
+            }
+
+            if (desVertices.Count > 0)
+                return SuitableVertex(path, desVertices);
+
+            // If not, set desired position to 'random' valid neighbour next to player
             foreach (Vertex neighbour in plyVertex.Neighbours)
             {
                 if (neighbour != oppVertex)
                 {
-                    desiredPos = neighbour.Position;
-                    break;
+                    desVertices.Add(neighbour);
+                }
+            }
+
+            if (desVertices.Count > 0)
+                return SuitableVertex(path, desVertices);
+        }
+
+        return desiredPos;
+    }
+
+    /// <summary>
+    /// Return position of a suitable vertex to go to
+    /// </summary>
+    private Point SuitableVertex(List<Vertex> path, List<Vertex> desVertices)
+    {
+        // If the vertex we are trying to go to is already contained in path, go to it
+        for (int i = 0; i < path.Count; i++)
+        {
+            for (int j = 0; j < desVertices.Count; j++) // At most 3
+            {
+                if (path[i] == desVertices[j])
+                {
+                    return path[i].Position;
                 }
             }
         }
 
-        return desiredPos;
+        // Else return with going to vertex closest to goal
+        return Min(path, desVertices.ToArray()).Position;
+    }
+
+    /// <summary>
+    /// Return vertex of closest distance to goal
+    /// </summary>
+    private Vertex Min(List<Vertex> path, params Vertex[] vertices)
+    {
+        Vertex closest = vertices[0];
+        float smallest = float.MaxValue;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            float distance = Graph.Distance(vertices[i], path[path.Count - 1]);
+            if (distance < smallest)
+            {
+                closest = vertices[i];
+                smallest = distance;
+            }
+        }
+
+        return closest;
     }
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)
