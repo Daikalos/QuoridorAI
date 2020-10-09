@@ -16,6 +16,8 @@ class Vertex
     public float G { get; set; } // Distance from current to start
     public float H { get; set; } // Distance from current to end
 
+    public int EdgeCount => Edges.Count;
+
     public Vertex(Point pos)
     {
         Position = pos;

@@ -45,7 +45,6 @@
     <Compile Include="Pathfinding\A_Star.cs" />
     <Compile Include="Pathfinding\Graph.cs" />
     <Compile Include="Pathfinding\Edge.cs" />
-    <Compile Include="Pathfinding\Pathfinder.cs" />
     <Compile Include="Pathfinding\Vertex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

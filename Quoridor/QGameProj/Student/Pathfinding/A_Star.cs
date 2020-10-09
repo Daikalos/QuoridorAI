@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class A_Star : Pathfinder
+class A_Star
 {
-    public List<Vertex> pathTo(Vertex start, Vertex end)
+    // Modified to allow multiple end vertices, as quoridor has it
+    public List<Vertex> pathTo(Vertex start, params Vertex[] end)
     {
         List<Vertex> path = new List<Vertex>();
         Queue<Vertex> open = new Queue<Vertex>();
@@ -13,6 +14,8 @@ class A_Star : Pathfinder
         open.Enqueue(current);
 
         current.G = 0;
+
+        Vertex closestEnd = end.OrderBy(v => Distance(start, v)).FirstOrDefault();
 
         while (open.Count > 0)
         {
@@ -23,8 +26,8 @@ class A_Star : Pathfinder
             {
                 current.IsVisited = true;
 
-                if (current.Equals(end))
-                    return FindPath(start, end);
+                if (end.Contains(current))
+                    return FindPath(start, current);
 
                 foreach (Edge edge in current.Edges)
                 {
@@ -34,7 +37,7 @@ class A_Star : Pathfinder
                     if (gScore < neighbour.G)
                     {
                         neighbour.G = gScore;
-                        neighbour.H = gScore + Distance(neighbour, end);
+                        neighbour.H = gScore + Distance(neighbour, closestEnd);
 
                         neighbour.Parent = current;
 
@@ -48,7 +51,7 @@ class A_Star : Pathfinder
         return new List<Vertex>(); 
     } 
 
-    private List<Vertex> FindPath(Vertex start, Vertex end)
+    private List<Vertex> FindPath(Vertex start, Vertex end) // Reconstruct path
     {
         List<Vertex> path = new List<Vertex>();
         Vertex current = end;
