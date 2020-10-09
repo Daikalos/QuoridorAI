@@ -9,11 +9,11 @@ class Graph
 
     private SpelBräde board;
 
-    int boardLengthX;
-    int boardLengthY;
+    public int boardWidth { get; private set; }
+    public int boardHeight { get; private set; }
 
-    int wallLengthX;
-    int wallLengthY;
+    public int wallLengthX { get; private set; }
+    public int wallLengthY { get; private set; }
 
     public Graph(SpelBräde board)
     {
@@ -22,8 +22,8 @@ class Graph
         Edges = new List<Edge>();
         Vertices = new List<Vertex>();
 
-        boardLengthX = board.horisontellaLångaVäggar.GetLength(0) + 1;
-        boardLengthY = board.horisontellaLångaVäggar.GetLength(1) + 1;
+        boardWidth = board.horisontellaLångaVäggar.GetLength(0) + 1;
+        boardHeight = board.horisontellaLångaVäggar.GetLength(1) + 1;
 
         wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
         wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
@@ -33,46 +33,35 @@ class Graph
 
     public Vertex AtPos(int x, int y)
     {
-        return Vertices[x + y * boardLengthX];
+        return Vertices[x + y * boardWidth];
     }
 
     public Vertex AtPos(Point pos)
     {
-        return Vertices[pos.X + pos.Y * boardLengthX];
+        return Vertices[pos.X + pos.Y * boardWidth];
+    }
+
+    public bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
+    {
+        return !(x < 0 || y < 0 || x >= boundsWidth || y >= boundsHeight);
+    }
+
+    public bool WithinBounds(Point pos, float boundsWidth, float boundsHeight)
+    {
+        return !(pos.X < 0 || pos.Y < 0 || pos.X >= boundsWidth || pos.Y >= boundsHeight);
     }
 
     private void GenerateGraph()
     {
         AddVertices();
         AddEdges();
-
-        /*
-        for (int y = 0; y < boardLengthY; y++)
-        {
-            for (int x = boardLengthX - 1; x >= 0; x--)
-            {
-                Console.Write("[" + x + ", " + y + "] ");
-                AtPos(x, y).GetDir();
-                Console.Write(" ");
-            }
-            Console.WriteLine("");
-        }
-        Console.WriteLine("");
-        for (int y = 0; y < wallLengthY; y++)
-        {
-            for (int x = wallLengthX - 1; x >= 0; x--)
-            {
-                Console.Write("[" + x + ", " + y + "] " + board.horisontellaLångaVäggar[x, y]);
-            }
-            Console.WriteLine("");
-        }*/
     }
 
     private void AddVertices()
     {
-        for (int y = 0; y < boardLengthY; y++) // Add all vertices
+        for (int y = 0; y < boardHeight; y++) // Add all vertices
         {
-            for (int x = 0; x < boardLengthX; x++)
+            for (int x = 0; x < boardWidth; x++)
             {
                 Vertices.Add(new Vertex(new Point(x, y)));
             }
@@ -81,13 +70,13 @@ class Graph
 
     private void AddEdges()
     {
-        for (int y = 0; y < boardLengthY; y++) // Add all edges
+        for (int y = 0; y < boardHeight; y++) // Add all edges
         {
-            for (int x = 0; x < boardLengthX; x++)
+            for (int x = 0; x < boardWidth; x++)
             {
                 for (int i = -1; i <= 1; i += 2) // Left and Right
                 {
-                    if (WithinBounds((x + i), y, boardLengthX, boardLengthY))
+                    if (WithinBounds((x + i), y, boardWidth, boardHeight))
                     {
                         Vertex vertex = AtPos(x, y);
                         Vertex neighbour = AtPos(x + i, y);
@@ -101,9 +90,7 @@ class Graph
                         for (int l = 0; l < 2; l++) // Length of individual wall
                         {
                             if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
-                            {
                                 addEdge = !board.vertikalaLångaVäggar[xPos, yPos + l];
-                            }
 
                             if (!addEdge) break;
                         }
@@ -113,7 +100,7 @@ class Graph
                 }
                 for (int j = -1; j <= 1; j += 2) //Top and Bottom
                 {
-                    if (WithinBounds(x, (y + j), boardLengthX, boardLengthY))
+                    if (WithinBounds(x, (y + j), boardWidth, boardHeight))
                     {
                         Vertex vertex = AtPos(x, y);
                         Vertex neighbour = AtPos(x, y + j);
@@ -127,9 +114,7 @@ class Graph
                         for (int l = 0; l < 2; l++) // Length of individual wall
                         {
                             if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
-                            {
                                 addEdge = !board.horisontellaLångaVäggar[xPos + l, yPos];
-                            }
 
                             if (!addEdge) break;
                         }
@@ -139,24 +124,5 @@ class Graph
                 }
             }
         }
-    }
-
-    public void ExamineBoardState()
-    {
-        for (int y = 0; y < boardLengthY; y++) // Add all edges
-        {
-            for (int x = 0; x < boardLengthX; x++)
-            {
-                foreach(Edge edge in AtPos(x, y).Edges)
-                {
-
-                }
-            }
-        }
-    }
-
-    private bool WithinBounds(int x, int y, float boundX, float boundY)
-    {
-        return !(x < 0 || y < 0 || x >= boundX || y >= boundY);
     }
 }

@@ -30,43 +30,66 @@ class Agent : BaseAgent
         Point playerPos = player.position;
         Point opponentPos = opponent.position;
 
-        int boardWidth = bräde.horisontellaLångaVäggar.GetLength(0) + 1;
-        int boardHeight = bräde.horisontellaLångaVäggar.GetLength(0) + 1;
-
         Drag move = new Drag();
 
-        Graph graph = new Graph(bräde);   // Generate graph of map
-        A_Star pathfinder = new A_Star(); // Use A_Star to find shortest path
+        Graph graph = new Graph(bräde);   // Generate a graph over map
+        A_Star pathfinder = new A_Star(); // Use A* to find shortest path
 
-        List<Vertex> destVertices = new List<Vertex>();
-        for (int x = 0; x < boardWidth; x++) // Add goal vertices to find path to
-            destVertices.Add(graph.AtPos(x, boardHeight - 1));
+        List<Vertex> destVertices = new List<Vertex>(); // Add goal vertices to find path to
+        for (int x = 0; x < graph.boardWidth; x++) 
+            destVertices.Add(graph.AtPos(x, graph.boardHeight - 1));
 
         List<Vertex> path = pathfinder.pathTo(
             graph.AtPos(playerPos),
             destVertices.ToArray());
 
-        if (path.Count == 0)
-        {
-            Console.WriteLine("NO PATH FOUND");
+        if (path.Count == 0) // No valid path found to goal
             throw new System.ArgumentOutOfRangeException();
-        }
 
-        MoveOverOpponent(graph, path, opponentPos);
+        Point desiredPos = path[0].Position;
+
+        // If desired position is on the opponents position
+        if (desiredPos == opponentPos)
+            desiredPos = MoveOverOpponent(graph, playerPos, opponentPos);
 
         move.typ = Typ.Flytta;
-        move.point = path[0].Position;
+        move.point = desiredPos;
 
         return move;
     }
 
-    private static void MoveOverOpponent(Graph graph, List<Vertex> path, Point opponentPos)
+    private Point MoveOverOpponent(Graph graph, Point playerPos, Point opponentPos)
     {
-        if (path[0].Position == opponentPos)
-        {
-            Vertex vertex = graph.AtPos(opponentPos);
+        Point offset = opponentPos - playerPos;
+        Point desiredPos = playerPos + offset;
 
+        if (offset.X == 1)  // Opponent is to the left
+            desiredPos.X++;
+        if (offset.X == -1) // Opponent is to the right
+            desiredPos.X--;
+        if (offset.Y == -1) // Opponent is up
+            desiredPos.Y--;
+        if (offset.Y == 1)  // Opponent is down
+            desiredPos.Y++;
+
+        Vertex plyVertex = graph.AtPos(playerPos);
+        Vertex oppVertex = graph.AtPos(opponentPos);
+
+        // If there is no path to desired position
+        if (!graph.WithinBounds(desiredPos, graph.boardWidth, graph.boardHeight) || !oppVertex.Neighbours.Contains(graph.AtPos(desiredPos)))
+        {
+            // Set desired position to 'random' valid neighbour
+            foreach (Vertex neighbour in plyVertex.Neighbours)
+            {
+                if (neighbour != oppVertex)
+                {
+                    desiredPos = neighbour.Position;
+                    break;
+                }
+            }
         }
+
+        return desiredPos;
     }
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)

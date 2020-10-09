@@ -4,7 +4,7 @@ using System.Linq;
 
 class A_Star
 {
-    // Modified to allow multiple end vertices, as quoridor has it
+    // Modified to allow multiple goal vertices, as quoridor has it
     public List<Vertex> pathTo(Vertex start, params Vertex[] end)
     {
         List<Vertex> path = new List<Vertex>();
