@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class A_Star
+static class A_Star
 {
     // Modified to allow multiple goal vertices, as quoridor has it
-    public List<Vertex> pathTo(Vertex start, params Vertex[] end)
+    public static List<Vertex> PathTo(Vertex start, params Vertex[] end)
     {
         List<Vertex> path = new List<Vertex>();
         Queue<Vertex> open = new Queue<Vertex>();
@@ -51,7 +51,7 @@ class A_Star
         return new List<Vertex>(); // Return empty path if none is found
     } 
 
-    private List<Vertex> FindPath(Vertex start, Vertex end) // Reconstruct path
+    private static List<Vertex> FindPath(Vertex start, Vertex end) // Reconstruct path
     {
         List<Vertex> path = new List<Vertex>();
         Vertex current = end;

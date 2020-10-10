@@ -27,8 +27,6 @@ class Graph
 
         wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
         wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
-
-        GenerateGraph();
     }
 
     public Vertex AtPos(int x, int y)
@@ -56,7 +54,7 @@ class Graph
             Math.Pow(from.Position.Y - to.Position.Y, 2));
     }
 
-    private void GenerateGraph()
+    public void GenerateGraph()
     {
         AddVertices();
         AddEdges();
@@ -73,9 +71,9 @@ class Graph
     }
     private void AddEdges()
     {
-        for (int y = 0; y < boardHeight; y++) // Add all edges
+        for (int y = 0; y < boardHeight; ++y) // Add all edges
         {
-            for (int x = 0; x < boardWidth; x++)
+            for (int x = 0; x < boardWidth; ++x)
             {
                 for (int i = -1; i <= 1; i += 2) // Left and Right
                 {
@@ -87,10 +85,10 @@ class Graph
                         int xPos = x;
                         int yPos = y - 1;
 
-                        if (i < 0 && x > 0) xPos--;
+                        if (i < 0 && x > 0) --xPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; l++) // Length of individual wall
+                        for (int l = 0; l < 2; ++l)
                         {
                             if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
                                 addEdge = !board.vertikalaLångaVäggar[xPos, yPos + l];
@@ -98,7 +96,7 @@ class Graph
                             if (!addEdge) break;
                         }
 
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour, 1));
+                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
                     }
                 }
                 for (int j = -1; j <= 1; j += 2) //Top and Bottom
@@ -111,10 +109,10 @@ class Graph
                         int xPos = x - 1;
                         int yPos = y;
 
-                        if (j < 0 && y > 0) yPos--;
+                        if (j < 0 && y > 0) --yPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; l++) // Length of individual wall
+                        for (int l = 0; l < 2; ++l)
                         {
                             if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
                                 addEdge = !board.horisontellaLångaVäggar[xPos + l, yPos];
@@ -122,7 +120,70 @@ class Graph
                             if (!addEdge) break;
                         }
 
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour, 1));
+                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
+                    }
+                }
+            }
+        }
+    }
+
+    public void GenerateGraph(bool[,] verticalWalls, bool[,] horizontalWalls)
+    {
+        AddVertices();
+        AddEdges(verticalWalls, horizontalWalls);
+    }
+    private void AddEdges(bool[,] verticalWalls, bool[,] horizontalWalls)
+    {
+        for (int y = 0; y < boardHeight; ++y) // Add all edges
+        {
+            for (int x = 0; x < boardWidth; ++x)
+            {
+                for (int i = -1; i <= 1; i += 2) // Left and Right
+                {
+                    if (WithinBounds((x + i), y, boardWidth, boardHeight))
+                    {
+                        Vertex vertex = AtPos(x, y);
+                        Vertex neighbour = AtPos(x + i, y);
+
+                        int xPos = x;
+                        int yPos = y - 1;
+
+                        if (i < 0 && x > 0) --xPos;
+
+                        bool addEdge = true; // Don't add edge if wall between vertices
+                        for (int l = 0; l < 2; ++l)
+                        {
+                            if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
+                                addEdge = !verticalWalls[xPos, yPos + l];
+
+                            if (!addEdge) break;
+                        }
+
+                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
+                    }
+                }
+                for (int j = -1; j <= 1; j += 2) //Top and Bottom
+                {
+                    if (WithinBounds(x, (y + j), boardWidth, boardHeight))
+                    {
+                        Vertex vertex = AtPos(x, y);
+                        Vertex neighbour = AtPos(x, y + j);
+
+                        int xPos = x - 1;
+                        int yPos = y;
+
+                        if (j < 0 && y > 0) --yPos;
+
+                        bool addEdge = true; // Don't add edge if wall between vertices
+                        for (int l = 0; l < 2; ++l)
+                        {
+                            if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
+                                addEdge = !horizontalWalls[xPos + l, yPos];
+
+                            if (!addEdge) break;
+                        }
+
+                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
                     }
                 }
             }
