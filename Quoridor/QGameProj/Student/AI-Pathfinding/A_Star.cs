@@ -5,10 +5,12 @@ using System.Linq;
 static class A_Star
 {
     // Modified to allow multiple goal vertices, as quoridor has it
-    public static List<Vertex> PathTo(Vertex start, params Vertex[] end)
+    public static List<Vertex> PathTo(Graph graph, Vertex start, params Vertex[] end)
     {
         List<Vertex> path = new List<Vertex>();
         Queue<Vertex> open = new Queue<Vertex>();
+
+        graph.InitializeVertices();
 
         Vertex current = start;
         open.Enqueue(current);

@@ -54,6 +54,16 @@ class Graph
             Math.Pow(from.Position.Y - to.Position.Y, 2));
     }
 
+    public void InitializeVertices()
+    {
+        foreach (Vertex vertex in Vertices)
+        {
+            vertex.IsVisited = false;
+            vertex.G = float.MaxValue;
+            vertex.H = float.MaxValue;
+        }
+    }
+
     public void GenerateGraph()
     {
         AddVertices();
@@ -88,10 +98,10 @@ class Graph
                         if (i < 0 && x > 0) --xPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; ++l)
+                        for (int k = 0; k < 2; ++k)
                         {
-                            if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
-                                addEdge = !board.vertikalaLångaVäggar[xPos, yPos + l];
+                            if (WithinBounds(xPos, yPos + k, wallLengthX, wallLengthY))
+                                addEdge = !board.vertikalaLångaVäggar[xPos, yPos + k];
 
                             if (!addEdge) break;
                         }
@@ -112,10 +122,10 @@ class Graph
                         if (j < 0 && y > 0) --yPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; ++l)
+                        for (int k = 0; k < 2; ++k)
                         {
-                            if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
-                                addEdge = !board.horisontellaLångaVäggar[xPos + l, yPos];
+                            if (WithinBounds(xPos + k, yPos, wallLengthX, wallLengthY))
+                                addEdge = !board.horisontellaLångaVäggar[xPos + k, yPos];
 
                             if (!addEdge) break;
                         }
@@ -151,10 +161,10 @@ class Graph
                         if (i < 0 && x > 0) --xPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; ++l)
+                        for (int k = 0; k < 2; ++k)
                         {
-                            if (WithinBounds(xPos, yPos + l, wallLengthX, wallLengthY))
-                                addEdge = !verticalWalls[xPos, yPos + l];
+                            if (WithinBounds(xPos, yPos + k, wallLengthX, wallLengthY))
+                                addEdge = !verticalWalls[xPos, yPos + k];
 
                             if (!addEdge) break;
                         }
@@ -175,10 +185,10 @@ class Graph
                         if (j < 0 && y > 0) --yPos;
 
                         bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int l = 0; l < 2; ++l)
+                        for (int k = 0; k < 2; ++k)
                         {
-                            if (WithinBounds(xPos + l, yPos, wallLengthX, wallLengthY))
-                                addEdge = !horizontalWalls[xPos + l, yPos];
+                            if (WithinBounds(xPos + k, yPos, wallLengthX, wallLengthY))
+                                addEdge = !horizontalWalls[xPos + k, yPos];
 
                             if (!addEdge) break;
                         }

@@ -42,10 +42,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Agent.cs" />
-    <Compile Include="Pathfinding\A_Star.cs" />
-    <Compile Include="Pathfinding\Graph.cs" />
-    <Compile Include="Pathfinding\Edge.cs" />
-    <Compile Include="Pathfinding\Vertex.cs" />
+    <Compile Include="AI-Options\MOO.cs" />
+    <Compile Include="AI-Options\WallPlacement.cs" />
+    <Compile Include="AI-Pathfinding\A_Star.cs" />
+    <Compile Include="AI-Graph\Graph.cs" />
+    <Compile Include="AI-Graph\Edge.cs" />
+    <Compile Include="AI-Graph\Vertex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
