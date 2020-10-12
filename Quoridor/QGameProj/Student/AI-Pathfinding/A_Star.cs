@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 static class A_Star
@@ -64,6 +63,7 @@ static class A_Star
             current = current.Parent;
         }
 
+        path.Add(start);
         path.Reverse();
 
         return path;

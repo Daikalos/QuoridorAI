@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-// Move Over Opponent
-class MOO
+class MoveOver
 {
-    private List<Vertex> path; // Player Path
+    private List<Vertex> plyPath; // Player Path
 
-    public MOO(List<Vertex> path)
+    public MoveOver(List<Vertex> plyPath)
     {
-        this.path = path;
+        this.plyPath = plyPath;
     }
 
     public Point MoveOverOpponent(Graph graph, Point playerPos, Point opponentPos)
@@ -64,13 +63,13 @@ class MOO
     private Point SuitableVertex(List<Vertex> desVertices)
     {
         // If the vertex we are trying to go to is already contained in path, go to it
-        for (int i = 0; i < path.Count; i++)
+        for (int i = 0; i < plyPath.Count; i++)
         {
             for (int j = 0; j < desVertices.Count; j++) // At most 3
             {
-                if (path[i] == desVertices[j])
+                if (plyPath[i] == desVertices[j])
                 {
-                    return path[i].Position;
+                    return plyPath[i].Position;
                 }
             }
         }
@@ -79,16 +78,17 @@ class MOO
         return Min(desVertices.ToArray()).Position;
     }
 
+    /// <summary>
+    /// Return vertex of closest distance to goal
+    /// </summary>
     private Vertex Min(params Vertex[] vertices)
     {
-        // Return vertex of closest distance to goal
-
         Vertex closest = vertices[0];
         float smallest = float.MaxValue;
 
         for (int i = 0; i < vertices.Length; i++)
         {
-            float distance = Graph.Distance(vertices[i], path[path.Count - 1]);
+            float distance = Graph.Distance(vertices[i], plyPath[plyPath.Count - 1]);
             if (distance < smallest)
             {
                 closest = vertices[i];

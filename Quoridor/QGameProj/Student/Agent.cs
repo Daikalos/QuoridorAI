@@ -34,7 +34,7 @@ class Agent : BaseAgent
         Drag move = new Drag();
 
         Graph graph = new Graph(bräde); // Generate a graph over map
-        graph.GenerateGraph();
+        graph.GenerateGraph();      
 
         SetEdgeWeight(graph, opponent);
 
@@ -43,23 +43,23 @@ class Agent : BaseAgent
             destVertices.Add(graph.AtPos(x, graph.boardHeight - 1));
 
         // Use A* to find shortest path
-        List<Vertex> path = A_Star.PathTo(graph,
+        List<Vertex> plyPath = A_Star.PathTo(graph,
             graph.AtPos(playerPos),
             destVertices.ToArray());
 
-        if (path.Count == 0) // No valid path found to goal
+        if (plyPath.Count <= 1) // No valid path found to goal
             throw new System.ArgumentOutOfRangeException();
 
-        Point desiredPos = path[0].Position;
+        Point desiredPos = plyPath[1].Position;
 
         // If desired position is on the opponents position
         if (desiredPos == opponentPos)
-            desiredPos = new MOO(path).MoveOverOpponent(graph, playerPos, opponentPos);
+            desiredPos = new MoveOver(plyPath).MoveOverOpponent(graph, playerPos, opponentPos);
 
         move.typ = Typ.Flytta;
         move.point = desiredPos;
 
-        if (player.antalVäggar > 0) // Check if to place a wall
+        if (player.antalVäggar > 0) // Check if possible to place a wall
         {
             List<Vertex> oppDestVertices = new List<Vertex>(); // Add opponents goal vertices to find path to
             for (int x = 0; x < graph.boardWidth; x++)
@@ -69,8 +69,14 @@ class Agent : BaseAgent
                 graph.AtPos(opponent.position),
                 oppDestVertices.ToArray());
 
-            if (oppPath.Count + (opponent.antalVäggar / 6) < path.Count + (player.antalVäggar / 6)) // If opponent is closer to goal than player
-                new WallPlacement(bräde).PlaceWall(ref move, bräde, path, oppPath);
+            Console.WriteLine(oppPath.Count + ", " + plyPath.Count);
+
+            // If opponent is much closer to goal than player
+            if (oppPath.Count < (plyPath.Count - 1) || player.antalVäggar == 10)
+                new WallPlacement(bräde, oppPath, true).PlaceWall(ref move);
+            
+            if (oppPath.Count < plyPath.Count || opponent.antalVäggar < player.antalVäggar)
+                new WallPlacement(bräde, oppPath, false).PlaceWall(ref move);
         }
 
         Console.WriteLine(move.typ + ", " + move.point);
@@ -92,7 +98,7 @@ class Agent : BaseAgent
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    edge.Weight = 1 + ((4 / vertex.EdgeCount) * opponent.antalVäggar * 2.0f);
+                    edge.Weight = 1 + ((4 / vertex.EdgeCount) * opponent.antalVäggar * 4.0f);
                 }
             }
         }
