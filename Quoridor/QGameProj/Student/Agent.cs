@@ -38,14 +38,10 @@ class Agent : BaseAgent
 
         SetEdgeWeight(graph, opponent);
 
-        List<Vertex> destVertices = new List<Vertex>(); // Add goal vertices to find path to
-        for (int x = 0; x < graph.boardWidth; x++) 
-            destVertices.Add(graph.AtPos(x, graph.boardHeight - 1));
-
         // Use A* to find shortest path
         List<Vertex> plyPath = A_Star.PathTo(graph,
             graph.AtPos(playerPos),
-            destVertices.ToArray());
+            graph.OpponentGoal());
 
         if (plyPath.Count <= 1) // No valid path found to goal
             throw new System.ArgumentOutOfRangeException();
@@ -61,21 +57,17 @@ class Agent : BaseAgent
 
         if (player.antalVäggar > 0) // Check if possible to place a wall
         {
-            List<Vertex> oppDestVertices = new List<Vertex>(); // Add opponents goal vertices to find path to
-            for (int x = 0; x < graph.boardWidth; x++)
-                oppDestVertices.Add(graph.AtPos(x, 0));
-
             List<Vertex> oppPath = A_Star.PathTo(graph,
                 graph.AtPos(opponent.position),
-                oppDestVertices.ToArray());
+                graph.OpponentGoal());
 
             Console.WriteLine(oppPath.Count + ", " + plyPath.Count);
 
             // If opponent is much closer to goal than player
-            if (oppPath.Count < (plyPath.Count - 1) || player.antalVäggar == 10)
+            if (oppPath.Count < (plyPath.Count - 1))
                 new WallPlacement(bräde, oppPath, true).PlaceWall(ref move);
-            
-            if (oppPath.Count < plyPath.Count || opponent.antalVäggar < player.antalVäggar)
+
+            if (oppPath.Count < plyPath.Count)
                 new WallPlacement(bräde, oppPath, false).PlaceWall(ref move);
         }
 

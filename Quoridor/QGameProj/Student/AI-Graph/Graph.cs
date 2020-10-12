@@ -38,6 +38,23 @@ class Graph
         return Vertices[pos.X + pos.Y * boardWidth];
     }
 
+    public Vertex[] PlayerGoal()
+    {
+        List<Vertex> goalVertices = new List<Vertex>();
+        for (int x = 0; x < boardWidth; x++)
+            goalVertices.Add(AtPos(x, boardHeight - 1));
+
+        return goalVertices.ToArray();
+    }
+    public Vertex[] OpponentGoal()
+    {
+        List<Vertex> goalVertices = new List<Vertex>();
+        for (int x = 0; x < boardWidth; x++)
+            goalVertices.Add(AtPos(x, 0));
+
+        return goalVertices.ToArray();
+    }
+
     public static bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
     {
         return !(x < 0 || y < 0 || x >= boundsWidth || y >= boundsHeight);

@@ -76,7 +76,7 @@ class WallPlacement
         if (Graph.WithinBounds(placeAt, graph.boardWidth, graph.boardHeight))
         {
             if (placeVertical) PlaceVerticalWall(placeAt, offset, out x, out y);
-            else               PlaceHorizontalWall(placeAt, offset, out x, out y);
+            else PlaceHorizontalWall(placeAt, offset, out x, out y);
         }
 
         if (x == -1 || y == -1)
@@ -88,27 +88,19 @@ class WallPlacement
         graph = new Graph(board); // Generate new graph to test current placements
         graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
 
-        List<Vertex> oppDestVertices = new List<Vertex>();
-        for (int l = 0; l < graph.boardWidth; l++)
-            oppDestVertices.Add(graph.AtPos(l, 0));
-
         List<Vertex> oppNewPath = A_Star.PathTo(graph,
             graph.AtPos(opponent.position),
-            oppDestVertices.ToArray());
-
-        List<Vertex> plyDestVertices = new List<Vertex>();
-        for (int l = 0; l < graph.boardWidth; l++)
-            plyDestVertices.Add(graph.AtPos(l, graph.boardHeight - 1));
+            graph.OpponentGoal());
 
         List<Vertex> plyNewPath = A_Star.PathTo(graph,
             graph.AtPos(player.position),
-            plyDestVertices.ToArray());
+            graph.PlayerGoal());
 
         if (oppNewPath.Count == 0 || plyNewPath.Count == 0)
             return;
 
         // If this new path is longer for opponent than player, then (x, y) is a suitable position to place a wall at
-        if (oppNewPath.Count > plyNewPath.Count || (prioDef && oppNewPath.Count > oppPath.Count))
+        if (oppNewPath.Count >= plyNewPath.Count || (prioDef && oppNewPath.Count > oppPath.Count))
         {
             bestPath.Add(new Tuple<Drag, int>(new Drag
             {
