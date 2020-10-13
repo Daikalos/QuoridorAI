@@ -54,22 +54,15 @@ class Agent : BaseAgent
                 graph.AtPos(opponent.position),
                 graph.OpponentGoal());
 
-            // If opponent is much closer to goal than player
-            if (oppPath.Count < (plyPath.Count - 1))
+            // Prioratize defense when opponent is close to goal
+            if (oppPath.Count <= 3 && plyPath.Count > 3)
                 new WallPlacement(bräde, oppPath, true).PlaceWall(ref move);
 
             if (oppPath.Count < plyPath.Count)
                 new WallPlacement(bräde, oppPath, false).PlaceWall(ref move);
-
-            if (player.antalVäggar == 10 && opponent.antalVäggar == 10)
-            {
-                if (oppPath.Count == 8 && plyPath.Count == 8)
-                {
-                    move.point = new Point(opponentPos.X - 1, opponentPos.Y - 1);
-                    move.typ = Typ.Vertikal;
-                }
-            }
         }
+
+        Console.WriteLine(move.typ + ", " + move.point);
 
         return move;
     }

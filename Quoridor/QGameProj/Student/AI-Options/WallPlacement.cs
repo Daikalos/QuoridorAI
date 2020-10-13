@@ -67,9 +67,9 @@ class WallPlacement
             vertexFrom.Position.X + j,
             vertexFrom.Position.Y + k);
 
+        // Which wall to place depending on if opponent is going horizontally or vertically
         bool placeVertical = (Math.Abs(offset.X) > 0);
 
-        // Which wall to place depending on if opponent is going horizontally or vertically
         cpyWallsVert = (bool[,])board.vertikalaLångaVäggar.Clone();
         cpyWallsHori = (bool[,])board.horisontellaLångaVäggar.Clone();
 
@@ -83,6 +83,9 @@ class WallPlacement
         }
 
         if (x == -1 || y == -1 || board.vertikalaLångaVäggar[x, y] || board.horisontellaLångaVäggar[x, y])
+            return;
+
+        if ((placeVertical && !cpyWallsVert[x, y]) || (!placeVertical && !cpyWallsHori[x, y]))
             return;
 
         graph = new Graph(board); // Generate new graph to test current placements
