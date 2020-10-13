@@ -15,16 +15,6 @@ class Agent : BaseAgent
 
     public override Drag SökNästaDrag(SpelBräde bräde) 
     {
-        return !(bräde.avanceradeRegler) ? Normal(bräde) : Advanced(bräde);
-    }
-
-    private Drag Normal(SpelBräde bräde)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    private Drag Advanced(SpelBräde bräde)
-    {
         Spelare player = bräde.spelare[0];
         Spelare opponent = bräde.spelare[1];
 
@@ -34,14 +24,14 @@ class Agent : BaseAgent
         Drag move = new Drag();
 
         Graph graph = new Graph(bräde); // Generate a graph over map
-        graph.GenerateGraph();      
+        graph.GenerateGraph();
 
         SetEdgeWeight(graph, opponent);
 
         // Use A* to find shortest path
         List<Vertex> plyPath = A_Star.PathTo(graph,
             graph.AtPos(playerPos),
-            graph.OpponentGoal());
+            graph.PlayerGoal());
 
         if (plyPath.Count <= 1) // No valid path found to goal
             throw new System.ArgumentOutOfRangeException();
@@ -49,7 +39,7 @@ class Agent : BaseAgent
         Point desiredPos = plyPath[1].Position;
 
         // If desired position is on the opponents position
-        if (desiredPos == opponentPos)
+        if (bräde.avanceradeRegler && desiredPos == opponentPos)
             desiredPos = new MoveOver(plyPath).MoveOverOpponent(graph, playerPos, opponentPos);
 
         move.typ = Typ.Flytta;
@@ -57,11 +47,12 @@ class Agent : BaseAgent
 
         if (player.antalVäggar > 0) // Check if possible to place a wall
         {
+            if (opponent.antalVäggar > 0)
+                new PredictOpponent(bräde, plyPath, move.point).PredictOpponentsMove(ref move);
+
             List<Vertex> oppPath = A_Star.PathTo(graph,
                 graph.AtPos(opponent.position),
                 graph.OpponentGoal());
-
-            Console.WriteLine(oppPath.Count + ", " + plyPath.Count);
 
             // If opponent is much closer to goal than player
             if (oppPath.Count < (plyPath.Count - 1))
@@ -69,9 +60,16 @@ class Agent : BaseAgent
 
             if (oppPath.Count < plyPath.Count)
                 new WallPlacement(bräde, oppPath, false).PlaceWall(ref move);
-        }
 
-        Console.WriteLine(move.typ + ", " + move.point);
+            if (player.antalVäggar == 10 && opponent.antalVäggar == 10)
+            {
+                if (oppPath.Count == 8 && plyPath.Count == 8)
+                {
+                    move.point = new Point(opponentPos.X - 1, opponentPos.Y - 1);
+                    move.typ = Typ.Vertikal;
+                }
+            }
+        }
 
         return move;
     }

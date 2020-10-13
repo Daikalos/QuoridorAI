@@ -2,8 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-
-class WallPlacement
+class PredictOpponent
 {
     private Graph graph;
     private SpelBräde board;
@@ -11,20 +10,21 @@ class WallPlacement
     private Spelare player;
     private Spelare opponent;
 
-    // Find which path is the longest and use it to determine best placement
+    // Find which path is the longest and use it to determine worst placement for player
     private List<Tuple<Drag, int>> bestMoves;
-    private List<Vertex> oppPath;
+    private List<Vertex> plyPath;
+
+    // Player's next evaluated position
+    private Point playerPos;
 
     private bool[,] cpyWallsVert;
     private bool[,] cpyWallsHori;
 
-    private bool prioDef;
-
-    public WallPlacement(SpelBräde board, List<Vertex> oppPath, bool prioDef)
+    public PredictOpponent(SpelBräde board, List<Vertex> plyPath, Point playerPos)
     {
         this.board = board;
-        this.oppPath = oppPath;
-        this.prioDef = prioDef;
+        this.plyPath = plyPath;
+        this.playerPos = playerPos;
 
         graph = new Graph(board);
         graph.GenerateGraph();
@@ -35,10 +35,10 @@ class WallPlacement
         bestMoves = new List<Tuple<Drag, int>>();
     }
 
-    public void PlaceWall(ref Drag move)
+    public void PredictOpponentsMove(ref Drag move)
     {
         // Iterate through every vertex on path
-        for (int i = 0; i < oppPath.Count - 1; ++i)
+        for (int i = 0; i < plyPath.Count - 1; ++i)
         {
             TestWallPlacement(i, 0, 0);
 
@@ -52,15 +52,40 @@ class WallPlacement
                 TestWallPlacement(i, l, l);
         }
 
-        // When all suitable placements has been evaluated, return best placement for wall
+        // When all placements has been evaluated, return best placement against the player
         if (bestMoves.Count > 0)
-            move = BestPlacement();
+        {
+            Drag bestMove = BestPlacement();
+            Drag newMove = new Drag();
+
+            cpyWallsVert = (bool[,])board.vertikalaLångaVäggar.Clone();
+            cpyWallsHori = (bool[,])board.horisontellaLångaVäggar.Clone();
+
+            if (!WallPlacementViable(bestMove, ref newMove))
+                return;
+
+            graph = new Graph(board); // Generate new graph to test current placements
+            graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
+
+            List<Vertex> plyNewPath = A_Star.PathTo(graph,
+                graph.AtPos(playerPos),
+                graph.PlayerGoal());
+
+            List<Vertex> oppNewPath = A_Star.PathTo(graph,
+                graph.AtPos(opponent.position),
+                graph.OpponentGoal());
+
+            if (oppNewPath.Count == 0 || plyNewPath.Count == 0)
+                return;
+
+            move = newMove;
+        }
     }
 
     private void TestWallPlacement(int i, int j, int k)
     {
-        Vertex vertexFrom = oppPath[i];
-        Vertex vertexTo = oppPath[i + 1];
+        Vertex vertexFrom = plyPath[i];
+        Vertex vertexTo = plyPath[i + 1];
 
         Point offset = vertexFrom.Position - vertexTo.Position;
         Point placeAt = new Point(
@@ -93,20 +118,20 @@ class WallPlacement
             graph.OpponentGoal());
 
         List<Vertex> plyNewPath = A_Star.PathTo(graph,
-            graph.AtPos(player.position),
+            graph.AtPos(playerPos),
             graph.PlayerGoal());
 
         if (oppNewPath.Count == 0 || plyNewPath.Count == 0)
             return;
 
-        // If this new path is longer for opponent than player, then (x, y) is a suitable position to place a wall at
-        if (oppNewPath.Count >= plyNewPath.Count || (prioDef && oppNewPath.Count > oppPath.Count))
+        // If this new path is much longer for player, then (x, y) is a suitable position for opponent to place a wall at
+        if ((plyNewPath.Count - 2) > oppNewPath.Count)
         {
             bestMoves.Add(new Tuple<Drag, int>(new Drag
             {
                 point = new Point(x, y),
                 typ = (placeVertical) ? Typ.Vertikal : Typ.Horisontell
-            }, oppNewPath.Count));
+            }, plyNewPath.Count));
         }
     }
 
@@ -169,6 +194,36 @@ class WallPlacement
             return;
 
         cpyWallsHori[x, y] = true;
+    }
+
+    private bool WallPlacementViable(Drag bestMove, ref Drag newMove)
+    {
+        if (bestMove.typ == Typ.Vertikal)
+        {
+            if (HorizontalWallViable(bestMove.point.X, bestMove.point.Y))
+            {
+                newMove.typ = Typ.Horisontell;
+                newMove.point = bestMove.point;
+
+                cpyWallsHori[bestMove.point.X, bestMove.point.Y] = true;
+
+                return true;
+            }
+        }
+        if (bestMove.typ == Typ.Horisontell)
+        {
+            if (VerticalWallViable(bestMove.point.X, bestMove.point.Y))
+            {
+                newMove.typ = Typ.Vertikal;
+                newMove.point = bestMove.point;
+
+                cpyWallsVert[bestMove.point.X, bestMove.point.Y] = true;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool VerticalWallViable(int x, int y)

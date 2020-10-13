@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Agent.cs" />
     <Compile Include="AI-Options\MoveOver.cs" />
+    <Compile Include="AI-Options\PredictOpponent.cs" />
     <Compile Include="AI-Options\WallPlacement.cs" />
     <Compile Include="AI-Pathfinding\A_Star.cs" />
     <Compile Include="AI-Graph\Graph.cs" />
