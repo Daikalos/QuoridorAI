@@ -47,22 +47,21 @@ class Agent : BaseAgent
 
         if (player.antalVäggar > 0) // Check if possible to place a wall
         {
-            if (opponent.antalVäggar > 0)
-                new PredictOpponent(bräde, plyPath, move.point).PredictOpponentsMove(ref move);
-
             List<Vertex> oppPath = A_Star.PathTo(graph,
-                graph.AtPos(opponent.position),
+                graph.AtPos(opponentPos),
                 graph.OpponentGoal());
 
+            // Try to predict where opponent may place a wall to hinder you, and counteract it if possible
+            if (opponent.antalVäggar > 0)
+                new PredictOpponent(bräde, oppPath, plyPath, move.point).PredictOpponentsMove(ref move);
+
             // Prioratize defense when opponent is close to goal
-            if (oppPath.Count <= 3 && plyPath.Count > 3)
-                new WallPlacement(bräde, oppPath, true).PlaceWall(ref move);
+            if (oppPath.Count <= 4 && plyPath.Count > 4)
+                new WallPlacement(bräde, oppPath, plyPath, true).PlaceWall(ref move);
 
             if (oppPath.Count < plyPath.Count)
-                new WallPlacement(bräde, oppPath, false).PlaceWall(ref move);
+                new WallPlacement(bräde, oppPath, plyPath, false).PlaceWall(ref move);
         }
-
-        Console.WriteLine(move.typ + ", " + move.point);
 
         return move;
     }
