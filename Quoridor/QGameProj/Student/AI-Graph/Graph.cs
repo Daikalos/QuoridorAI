@@ -6,6 +6,8 @@ class Graph
 {
     private SpelBräde board;
 
+    private Spelare opponent;
+
     private List<Vertex> Vertices;
     private List<Edge> Edges;
 
@@ -18,6 +20,7 @@ class Graph
     public Graph(SpelBräde board)
     {
         this.board = board;
+        opponent = board.spelare[1];
 
         Edges = new List<Edge>();
         Vertices = new List<Vertex>();
@@ -93,15 +96,7 @@ class Graph
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    Vertex neighbour = edge.To;
-                    foreach (Edge nEdge in neighbour.Edges)
-                    {
-                        if (nEdge.To == edge.From)
-                        {
-                            edge.Weight = 1 + ((4.0f - neighbour.EdgeCount) * AI_Data.edgeWeightFactor);
-                            break;
-                        }
-                    }
+                    edge.Weight = 1 + ((4.0f - edge.To.EdgeCount) * (opponent.antalVäggar / 10.0f) * AI_Data.edgeWeightFactor);
                 }
             }
         }
