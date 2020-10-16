@@ -42,13 +42,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Agent.cs" />
+    <Compile Include="AI-Options\AI_Data.cs" />
     <Compile Include="AI-Options\MoveOver.cs" />
-    <Compile Include="AI-Options\PredictOpponent.cs" />
+    <Compile Include="AI-Options\Prediction.cs" />
     <Compile Include="AI-Options\WallPlacement.cs" />
     <Compile Include="AI-Pathfinding\A_Star.cs" />
     <Compile Include="AI-Graph\Graph.cs" />
     <Compile Include="AI-Graph\Edge.cs" />
     <Compile Include="AI-Graph\Vertex.cs" />
+    <Compile Include="AI-Pathfinding\PriorityQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

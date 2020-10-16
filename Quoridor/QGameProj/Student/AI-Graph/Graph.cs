@@ -4,10 +4,12 @@ using System;
 
 class Graph
 {
-    public List<Vertex> Vertices { get; private set; }
-    public List<Edge> Edges { get; private set; }
-
     private SpelBräde board;
+
+    private List<Vertex> Vertices;
+    private List<Edge> Edges;
+
+    private int opponentWallCount;
 
     public int boardWidth { get; private set; }
     public int boardHeight { get; private set; }
@@ -18,6 +20,8 @@ class Graph
     public Graph(SpelBräde board)
     {
         this.board = board;
+
+        opponentWallCount = board.spelare[1].antalVäggar;
 
         Edges = new List<Edge>();
         Vertices = new List<Vertex>();
@@ -38,6 +42,22 @@ class Graph
         return Vertices[pos.X + pos.Y * boardWidth];
     }
 
+    public static bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
+    {
+        return !(x < 0 || y < 0 || x >= boundsWidth || y >= boundsHeight);
+    }
+    public static bool WithinBounds(Point pos, float boundsWidth, float boundsHeight)
+    {
+        return !(pos.X < 0 || pos.Y < 0 || pos.X >= boundsWidth || pos.Y >= boundsHeight);
+    }
+
+    public static float Distance(Vertex from, Vertex to)
+    {
+        return (float)Math.Sqrt(
+            Math.Pow(from.Position.X - to.Position.X, 2) +
+            Math.Pow(from.Position.Y - to.Position.Y, 2));
+    }
+
     public Vertex[] PlayerGoal()
     {
         List<Vertex> goalVertices = new List<Vertex>();
@@ -55,29 +75,32 @@ class Graph
         return goalVertices.ToArray();
     }
 
-    public static bool WithinBounds(int x, int y, float boundsWidth, float boundsHeight)
-    {
-        return !(x < 0 || y < 0 || x >= boundsWidth || y >= boundsHeight);
-    }
-    public static bool WithinBounds(Point pos, float boundsWidth, float boundsHeight)
-    {
-        return !(pos.X < 0 || pos.Y < 0 || pos.X >= boundsWidth || pos.Y >= boundsHeight);
-    }
-
-    public static float Distance(Vertex from, Vertex to)
-    {
-        return (float)Math.Sqrt(
-            Math.Pow(from.Position.X - to.Position.X, 2) +
-            Math.Pow(from.Position.Y - to.Position.Y, 2));
-    }
-
     public void InitializeVertices()
     {
         foreach (Vertex vertex in Vertices)
         {
             vertex.IsVisited = false;
-            vertex.G = float.MaxValue;
-            vertex.H = float.MaxValue;
+            vertex.G = float.PositiveInfinity;
+            vertex.H = float.PositiveInfinity;
+        }
+    }
+    public void SetEdgeWeight()
+    {
+        // Set the weight of each unique edge depending on number of paths available
+        for (int y = 0; y < boardHeight; y++)
+        {
+            int x = (y % 2 == 1) ? 1 : 0;
+            for (; x < boardWidth; x += 2)
+            {
+                Vertex vertex = AtPos(x, y);
+                foreach (Edge edge in vertex.Edges)
+                {
+                    if (vertex.EdgeCount == 0)
+                        break;
+
+                    edge.Weight = 1 + ((4.0f - vertex.EdgeCount) * (opponentWallCount / 10.0f) * AI_Data.edgeWeightFactor);
+                }
+            }
         }
     }
 
@@ -154,6 +177,9 @@ class Graph
         }
     }
 
+    /// <summary>
+    /// Generate custom graph
+    /// </summary>
     public void GenerateGraph(bool[,] verticalWalls, bool[,] horizontalWalls)
     {
         AddVertices();

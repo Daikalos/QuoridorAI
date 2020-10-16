@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 class Agent : BaseAgent 
 {
@@ -25,8 +24,6 @@ class Agent : BaseAgent
 
         Graph graph = new Graph(bräde); // Generate a graph over map
         graph.GenerateGraph();
-
-        SetEdgeWeight(graph, opponent);
 
         // Use A* to find shortest path
         List<Vertex> plyPath = A_Star.PathTo(graph,
@@ -53,10 +50,10 @@ class Agent : BaseAgent
 
             // Try to predict where opponent may place a wall to hinder you, and counteract it if possible
             if (opponent.antalVäggar > 0)
-                new PredictOpponent(bräde, oppPath, plyPath, move.point).PredictOpponentsMove(ref move);
+                new Prediction(bräde, oppPath, plyPath, move.point).OppWallPlacement(ref move);
 
             // Prioratize defense when opponent is close to goal
-            if (oppPath.Count <= 4 && plyPath.Count > 4)
+            if (oppPath.Count <= AI_Data.prioDefense && plyPath.Count > AI_Data.prioDefense)
                 new WallPlacement(bräde, oppPath, plyPath, true).PlaceWall(ref move);
 
             if (oppPath.Count < plyPath.Count)
@@ -64,26 +61,6 @@ class Agent : BaseAgent
         }
 
         return move;
-    }
-
-    private void SetEdgeWeight(Graph graph, Spelare opponent)
-    {
-        // Set the weight of each unique edge depending on number of paths available
-        for (int y = 0; y < graph.boardHeight; y++)
-        {
-            int x = (y % 2 == 1) ? 1 : 0;
-            for (; x < graph.boardWidth; x += 2)
-            {
-                Vertex vertex = graph.AtPos(x, y);
-                foreach (Edge edge in vertex.Edges)
-                {
-                    if (vertex.EdgeCount == 0)
-                        break;
-
-                    edge.Weight = 1 + ((4 / vertex.EdgeCount) * opponent.antalVäggar * 4.0f);
-                }
-            }
-        }
     }
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -90,7 +89,7 @@ class WallPlacement
         if ((placeVertical && !cpyWallsVert[x, y]) || (!placeVertical && !cpyWallsHori[x, y]))
             return;
 
-        graph = new Graph(board); // Generate new graph to test current placements
+        graph = new Graph(board); // Generate new temporary graph to test current placements
         graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
 
         List<Vertex> oppNewPath = A_Star.PathTo(graph,
@@ -108,7 +107,7 @@ class WallPlacement
         int plyPathCount = plyNewPath.Count - plyPath.Count;
 
         // If this new path is much longer for opponent than player, then (x, y) is a suitable position to place a wall at
-        if (((oppPathCount - 3) > plyPathCount) || prioDef)
+        if (((oppPathCount - AI_Data.wallPlacementPrio) > plyPathCount) || prioDef)
         {
             if (oppPathCount > 0)
             {

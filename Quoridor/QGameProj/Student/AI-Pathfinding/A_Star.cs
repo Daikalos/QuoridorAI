@@ -6,21 +6,21 @@ static class A_Star
     // Modified to allow multiple goal vertices, as quoridor has it
     public static List<Vertex> PathTo(Graph graph, Vertex start, params Vertex[] end)
     {
-        List<Vertex> path = new List<Vertex>();
-        Queue<Vertex> open = new Queue<Vertex>();
+        PriorityQueue<Vertex> open = new PriorityQueue<Vertex>();
 
         graph.InitializeVertices();
+        graph.SetEdgeWeight();
 
         Vertex current = start;
-        open.Enqueue(current);
+        open.Enqueue(current, current.F);
 
         current.G = 0;
 
-        Vertex closestEnd = end.OrderBy(v => Graph.Distance(start, v)).FirstOrDefault(); // Which goal to prioritize search for
+        Vertex closestEnd = end.OrderBy(
+            v => Graph.Distance(start, v)).FirstOrDefault(); // Which goal to prioritize search for
 
         while (open.Count > 0)
         {
-            open = new Queue<Vertex>(open.OrderBy(v => v.F)); // Slow cast to Priority Queue
             current = open.Dequeue();
 
             if (!current.IsVisited)
@@ -37,13 +37,13 @@ static class A_Star
                     float gScore = current.G + edge.Weight;
                     if (gScore < neighbour.G)
                     {
-                        neighbour.G = gScore;
-                        neighbour.H = gScore + Graph.Distance(neighbour, closestEnd);
-
                         neighbour.Parent = current;
 
+                        neighbour.G = gScore;
+                        neighbour.H = Graph.Distance(neighbour, closestEnd);
+
                         if (!open.Contains(neighbour))
-                            open.Enqueue(neighbour);
+                            open.Enqueue(neighbour, neighbour.F);
                     }
                 }
             }

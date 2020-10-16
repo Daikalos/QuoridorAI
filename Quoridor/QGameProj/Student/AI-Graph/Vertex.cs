@@ -26,8 +26,8 @@ class Vertex
 
         IsVisited = false;
 
-        G = float.MaxValue;
-        H = float.MaxValue;
+        G = float.PositiveInfinity;
+        H = float.PositiveInfinity;
     }
 
     public void AddNeighbour(Vertex vertex)

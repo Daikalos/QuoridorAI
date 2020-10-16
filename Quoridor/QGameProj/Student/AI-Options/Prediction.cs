@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-class PredictOpponent
+
+class Prediction
 {
     private Graph graph;
     private SpelBräde board;
@@ -21,7 +21,7 @@ class PredictOpponent
     private bool[,] cpyWallsVert;
     private bool[,] cpyWallsHori;
 
-    public PredictOpponent(SpelBräde board, List<Vertex> oppPath, List<Vertex> plyPath, Point playerPos)
+    public Prediction(SpelBräde board, List<Vertex> oppPath, List<Vertex> plyPath, Point playerPos)
     {
         this.board = board;
         this.oppPath = oppPath;
@@ -37,7 +37,7 @@ class PredictOpponent
         bestMoves = new List<Tuple<Drag, int>>();
     }
 
-    public void PredictOpponentsMove(ref Drag move)
+    public void OppWallPlacement(ref Drag move)
     {
         // Iterate through every vertex on path
         for (int i = 0; i < plyPath.Count - 1; ++i)
@@ -66,7 +66,7 @@ class PredictOpponent
             if (!WallPlacementViable(bestMove, ref newMove))
                 return;
 
-            graph = new Graph(board); // Generate new graph to test current placements
+            graph = new Graph(board); // Generate new temporary graph to test current placements
             graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
 
             List<Vertex> plyNewPath = A_Star.PathTo(graph,
@@ -77,6 +77,7 @@ class PredictOpponent
                 graph.AtPos(opponent.position),
                 graph.OpponentGoal());
 
+            // Do not attempt wall placement if no player can find any path to a goal
             if (oppNewPath.Count == 0 || plyNewPath.Count == 0)
                 return;
 
@@ -115,7 +116,7 @@ class PredictOpponent
         if ((placeVertical && !cpyWallsVert[x, y]) || (!placeVertical && !cpyWallsHori[x, y]))
             return;
 
-        graph = new Graph(board); // Generate new graph to test current placements
+        graph = new Graph(board); // Generate new temporary graph to test current placements
         graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
 
         List<Vertex> oppNewPath = A_Star.PathTo(graph,
@@ -133,7 +134,7 @@ class PredictOpponent
         int plyPathCount = plyNewPath.Count - plyPath.Count;
 
         // If this new path is much longer for player, then (x, y) is a suitable position for opponent to place a wall at
-        if ((plyPathCount - 2) > oppPathCount)
+        if ((plyPathCount - AI_Data.predictionFreq) > oppPathCount)
         {
             bestMoves.Add(new Tuple<Drag, int>(new Drag
             {
