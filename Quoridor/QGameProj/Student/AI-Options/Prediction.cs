@@ -44,14 +44,17 @@ class Prediction
         {
             TestWallPlacement(i, 0, 0);
 
-            for (int j = -1; j <= 1; j += 2)
-                TestWallPlacement(i, j, 0);
+            for (int j = -2; j <= 2; ++j)
+                if (j != 0) TestWallPlacement(i, j, 0);
 
-            for (int k = -1; k <= 1; k += 2)
-                TestWallPlacement(i, 0, k);
+            for (int k = -2; k <= 2; ++k)
+                if (k != 0) TestWallPlacement(i, 0, k);
 
-            for (int l = -1; l <= 1; l += 2)
-                TestWallPlacement(i, l, l);
+            for (int l = -2; l <= 2; ++l)
+                if (l != 0) TestWallPlacement(i, l, l);
+
+            for (int m = -2; m <= 2; ++m)
+                if (m != 0) TestWallPlacement(i, -m, m);
         }
 
         // When all placements has been evaluated, return best placement against the player

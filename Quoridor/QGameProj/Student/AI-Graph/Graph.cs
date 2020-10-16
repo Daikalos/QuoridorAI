@@ -9,8 +9,6 @@ class Graph
     private List<Vertex> Vertices;
     private List<Edge> Edges;
 
-    private int opponentWallCount;
-
     public int boardWidth { get; private set; }
     public int boardHeight { get; private set; }
 
@@ -20,8 +18,6 @@ class Graph
     public Graph(SpelBräde board)
     {
         this.board = board;
-
-        opponentWallCount = board.spelare[1].antalVäggar;
 
         Edges = new List<Edge>();
         Vertices = new List<Vertex>();
@@ -69,7 +65,7 @@ class Graph
     public Vertex[] OpponentGoal()
     {
         List<Vertex> goalVertices = new List<Vertex>();
-        for (int x = 0; x < boardWidth; x++)
+        for (int x = 0; x < boardWidth; ++x)
             goalVertices.Add(AtPos(x, 0));
 
         return goalVertices.ToArray();
@@ -87,10 +83,9 @@ class Graph
     public void SetEdgeWeight()
     {
         // Set the weight of each unique edge depending on number of paths available
-        for (int y = 0; y < boardHeight; y++)
+        for (int y = 0; y < boardHeight; ++y)
         {
-            int x = (y % 2 == 1) ? 1 : 0;
-            for (; x < boardWidth; x += 2)
+            for (int x = 0; x < boardWidth; ++x)
             {
                 Vertex vertex = AtPos(x, y);
                 foreach (Edge edge in vertex.Edges)
@@ -98,7 +93,7 @@ class Graph
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    edge.Weight = 1 + ((4.0f - vertex.EdgeCount) * (opponentWallCount / 10.0f) * AI_Data.edgeWeightFactor);
+                    edge.Weight = 1 + ((4.0f - vertex.EdgeCount) * AI_Data.edgeWeightFactor);
                 }
             }
         }
