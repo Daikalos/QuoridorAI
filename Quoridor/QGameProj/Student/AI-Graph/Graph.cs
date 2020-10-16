@@ -93,7 +93,15 @@ class Graph
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    edge.Weight = 1 + ((4.0f - vertex.EdgeCount) * AI_Data.edgeWeightFactor);
+                    Vertex neighbour = edge.To;
+                    foreach (Edge nEdge in neighbour.Edges)
+                    {
+                        if (nEdge.To == edge.From)
+                        {
+                            edge.Weight = 1 + ((4.0f - neighbour.EdgeCount) * AI_Data.edgeWeightFactor);
+                            break;
+                        }
+                    }
                 }
             }
         }
