@@ -40,12 +40,12 @@ class PriorityQueue <T> // Min Heap
         if (Count <= 0) // No data available
             return default(T);
 
-        Item root = priorityQueue.First(); // Get the root
+        Item root = priorityQueue.First();
 
         priorityQueue[0] = priorityQueue[Count - 1]; // Replace root with element at end
-        priorityQueue.RemoveAt(Count - 1);
+        priorityQueue.RemoveAt(Count - 1);           // Remove element at end
 
-        MoveDown(0); // After root is removed, move root down
+        MoveDown(0); // After root is removed, move it down
 
         return root.item;
     }

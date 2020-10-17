@@ -26,11 +26,11 @@ class Agent : BaseAgent
         graph.GenerateGraph();
 
         // Use A* to find shortest path
-        List<Vertex> plyPath = A_Star.PathTo(graph,
+        List<Vertex> plyPath = A_Star.PathTo(graph, true,
             graph.AtPos(playerPos),
             graph.PlayerGoal());
 
-        if (plyPath.Count <= 1) // No valid path found to goal
+        if (plyPath.Count == 0) // No valid path found to goal
             throw new System.ArgumentOutOfRangeException();
 
         Point desiredPos = plyPath[1].Position;
@@ -44,20 +44,20 @@ class Agent : BaseAgent
 
         if (player.antalVäggar > 0) // Check if possible to place a wall
         {
-            List<Vertex> oppPath = A_Star.PathTo(graph,
+            List<Vertex> oppPath = A_Star.PathTo(graph, true,
                 graph.AtPos(opponentPos),
                 graph.OpponentGoal());
 
             // Try to predict where opponent may place a wall to hinder you, and counteract it if possible
             if (opponent.antalVäggar > 0)
-                new Prediction(bräde, oppPath, plyPath, move.point).OppWallPlacement(ref move);
+                new Prediction(bräde, graph, move.point).OppWallPlacement(ref move);
 
             // Prioratize defense when opponent is close to goal
-            if (oppPath.Count <= AI_Data.prioDefense && plyPath.Count > AI_Data.prioDefense)
-                new WallPlacement(bräde, oppPath, plyPath, true).PlaceWall(ref move);
+            if (oppPath.Count <= AI_Data.prioDefense && oppPath.Count < plyPath.Count)
+                new WallPlacement(bräde, graph, true).PlaceWall(ref move);
 
             if (oppPath.Count < plyPath.Count)
-                new WallPlacement(bräde, oppPath, plyPath, false).PlaceWall(ref move);
+                new WallPlacement(bräde, graph, false).PlaceWall(ref move);
         }
 
         return move;

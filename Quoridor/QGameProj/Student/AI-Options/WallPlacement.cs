@@ -5,33 +5,39 @@ using Microsoft.Xna.Framework;
 class WallPlacement
 {
     private Graph graph;
-    private SpelBräde board;
 
     private Spelare player;
     private Spelare opponent;
 
-    // Find which path is the longest and use it to determine best placement
-    private List<Tuple<Drag, int>> bestMoves;
     private List<Vertex> oppPath;
     private List<Vertex> plyPath;
 
-    private bool[,] cpyWallsVert;
-    private bool[,] cpyWallsHori;
+    // Find which path is the longest and use it to determine best placement
+    private List<Tuple<Drag, int>> bestMoves;
+
+    private bool[,] wallsVert;
+    private bool[,] wallsHori;
 
     private bool prioDef;
 
-    public WallPlacement(SpelBräde board, List<Vertex> oppPath, List<Vertex> plyPath, bool prioDef)
+    public WallPlacement(SpelBräde board, Graph graph, bool prioDef)
     {
-        this.board = board;
-        this.oppPath = oppPath;
-        this.plyPath = plyPath;
+        this.graph = graph;
         this.prioDef = prioDef;
-
-        graph = new Graph(board);
-        graph.GenerateGraph();
 
         player = board.spelare[0];
         opponent = board.spelare[1];
+
+        oppPath = A_Star.PathTo(graph, false,
+            graph.AtPos(opponent.position),
+            graph.OpponentGoal());
+
+        plyPath = A_Star.PathTo(graph, false,
+            graph.AtPos(player.position),
+            graph.PlayerGoal());
+
+        wallsVert = board.vertikalaLångaVäggar;
+        wallsHori = board.horisontellaLångaVäggar;
 
         bestMoves = new List<Tuple<Drag, int>>();
     }
@@ -43,17 +49,17 @@ class WallPlacement
         {
             TestWallPlacement(i, 0, 0);
 
-            for (int j = -2; j <= 2; ++j)
+            for (int j = -3; j <= 3; ++j)
                 if (j != 0) TestWallPlacement(i, j, 0);
 
-            for (int k = -2; k <= 2; ++k)
+            for (int k = -3; k <= 3; ++k)
                 if (k != 0) TestWallPlacement(i, 0, k);
 
-            for (int l = -2; l <= 2; ++l)
+            for (int l = -3; l <= 3; ++l)
                 if (l != 0) TestWallPlacement(i, l, l);
 
-            for (int m = -2; m <= 2; ++m)
-                if (m != 0) TestWallPlacement(i, -m, m);
+            for (int l = -3; l <= 3; ++l)
+                if (l != 0) TestWallPlacement(i, -l, l);
         }
 
         // When all suitable placements has been evaluated, return best placement for wall
@@ -74,43 +80,46 @@ class WallPlacement
         // Which wall to place depending on if opponent is going horizontally or vertically
         bool placeVertical = (Math.Abs(offset.X) > 0);
 
-        cpyWallsVert = (bool[,])board.vertikalaLångaVäggar.Clone();
-        cpyWallsHori = (bool[,])board.horisontellaLångaVäggar.Clone();
-
         int x = -1;
         int y = -1;
 
         if (Graph.WithinBounds(placeAt, graph.boardWidth, graph.boardHeight))
         {
-            if (placeVertical) PlaceVerticalWall(placeAt, offset, out x, out y);
-            else               PlaceHorizontalWall(placeAt, offset, out x, out y);
+            if (placeVertical)
+            {
+                if (!PlaceVerticalWall(placeAt, offset, out x, out y))
+                    return;
+            }
+            else
+            {
+                if (!PlaceHorizontalWall(placeAt, offset, out x, out y))
+                    return;
+            }
         }
 
-        if (x == -1 || y == -1 || board.vertikalaLångaVäggar[x, y] || board.horisontellaLångaVäggar[x, y])
+        if (x == -1 || y == -1 || wallsVert[x, y] || wallsHori[x, y])
             return;
 
-        if ((placeVertical && !cpyWallsVert[x, y]) || (!placeVertical && !cpyWallsHori[x, y]))
-            return;
+        graph.AddWall(placeVertical, x, y);
 
-        graph = new Graph(board); // Generate new temporary graph to test current placements
-        graph.GenerateGraph(cpyWallsVert, cpyWallsHori);
-
-        List<Vertex> oppNewPath = A_Star.PathTo(graph,
+        List<Vertex> oppNewPath = A_Star.PathTo(graph, false,
             graph.AtPos(opponent.position),
             graph.OpponentGoal());
 
-        List<Vertex> plyNewPath = A_Star.PathTo(graph,
+        List<Vertex> plyNewPath = A_Star.PathTo(graph, false,
             graph.AtPos(player.position),
             graph.PlayerGoal());
+
+        graph.RemoveWall(placeVertical, x, y);
 
         if (oppNewPath.Count == 0 || plyNewPath.Count == 0)
             return;
 
-        int oppPathCount = oppNewPath.Count - oppPath.Count;
-        int plyPathCount = plyNewPath.Count - plyPath.Count;
+        int oppPathCount = Math.Max(0, oppNewPath.Count - oppPath.Count);
+        int plyPathCount = Math.Max(0, plyNewPath.Count - plyPath.Count);
 
         // If this new path is much longer for opponent than player, then (x, y) is a suitable position to place a wall at
-        if (((oppPathCount - AI_Data.wallPlacementPrio) > plyPathCount) || prioDef)
+        if (((oppPathCount - plyPathCount) > AI_Data.wallPlacementPrio) || prioDef)
         {
             if (oppPathCount > 0)
             {
@@ -123,7 +132,7 @@ class WallPlacement
         }
     }
 
-    private void PlaceVerticalWall(Point placeAt, Point offset, out int x, out int y)
+    private bool PlaceVerticalWall(Point placeAt, Point offset, out int x, out int y)
     {
         x = placeAt.X;
         y = placeAt.Y;
@@ -133,7 +142,7 @@ class WallPlacement
 
         for (int i = -1; i <= 1; i += 2)
         {
-            if (Graph.WithinBounds(x, y + i, graph.wallLengthX, graph.wallLengthY) && cpyWallsVert[x, y + i])
+            if (Graph.WithinBounds(x, y + i, graph.wallLengthX, graph.wallLengthY) && wallsVert[x, y + i])
             {
                 if (Graph.WithinBounds(x, y - i, graph.wallLengthX, graph.wallLengthY))
                 {
@@ -142,7 +151,7 @@ class WallPlacement
             }
         }
 
-        if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && cpyWallsHori[x, y])
+        if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && wallsHori[x, y])
         {
             if (Graph.WithinBounds(x - offset.X, y, graph.wallLengthX, graph.wallLengthY))
             {
@@ -151,11 +160,12 @@ class WallPlacement
         }
 
         if (!VerticalWallViable(x, y))
-            return;
+            return false;
 
-        cpyWallsVert[x, y] = true;
+
+        return true;
     }
-    private void PlaceHorizontalWall(Point placeAt, Point offset, out int x, out int y)
+    private bool PlaceHorizontalWall(Point placeAt, Point offset, out int x, out int y)
     {
         x = placeAt.X;
         y = placeAt.Y;
@@ -165,7 +175,7 @@ class WallPlacement
 
         for (int i = -1; i <= 1; i += 2)
         {
-            if (Graph.WithinBounds(x + i, y, graph.wallLengthX, graph.wallLengthY) && cpyWallsHori[x + i, y])
+            if (Graph.WithinBounds(x + i, y, graph.wallLengthX, graph.wallLengthY) && wallsHori[x + i, y])
             {
                 if (Graph.WithinBounds(x - i, y, graph.wallLengthX, graph.wallLengthY))
                 {
@@ -174,7 +184,7 @@ class WallPlacement
             }
         }
 
-        if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && cpyWallsVert[x, y])
+        if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && wallsVert[x, y])
         {
             if (Graph.WithinBounds(x, y - offset.Y, graph.wallLengthX, graph.wallLengthY))
             {
@@ -183,18 +193,18 @@ class WallPlacement
         }
 
         if (!HorizontalWallViable(x, y))
-            return;
+            return false;
 
-        cpyWallsHori[x, y] = true;
+        return true;
     }
 
     private bool VerticalWallViable(int x, int y)
     {
         for (int i = -1; i <= 1; i += 2) // Return if not valid wall placement
         {
-            if (Graph.WithinBounds(x, y + i, graph.wallLengthX, graph.wallLengthY) && cpyWallsVert[x, y + i])
+            if (Graph.WithinBounds(x, y + i, graph.wallLengthX, graph.wallLengthY) && wallsVert[x, y + i])
             {
-                if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && !cpyWallsVert[x, y])
+                if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && !wallsVert[x, y])
                 {
                     return false;
                 }
@@ -207,9 +217,9 @@ class WallPlacement
     {
         for (int i = -1; i <= 1; i += 2) // Return if not valid wall placement
         {
-            if (Graph.WithinBounds(x + i, y, graph.wallLengthX, graph.wallLengthY) && cpyWallsHori[x + i, y])
+            if (Graph.WithinBounds(x + i, y, graph.wallLengthX, graph.wallLengthY) && wallsHori[x + i, y])
             {
-                if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && !cpyWallsHori[x, y])
+                if (Graph.WithinBounds(x, y, graph.wallLengthX, graph.wallLengthY) && !wallsHori[x, y])
                 {
                     return false;
                 }

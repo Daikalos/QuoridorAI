@@ -39,4 +39,10 @@ class Vertex
     {
         Edges.Add(edge);
     }
+
+    public void RemoveEdge(Edge edge)
+    {
+        Neighbours.Remove(edge.To); // No longer any edge to this neighbour, remove it
+        Edges.Remove(edge);
+    }
 }

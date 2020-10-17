@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using System;
 
 class Graph
 {
     private SpelBräde board;
-
     private Spelare opponent;
 
     private List<Vertex> Vertices;
-    private List<Edge> Edges;
 
     public int boardWidth { get; private set; }
     public int boardHeight { get; private set; }
@@ -22,7 +21,6 @@ class Graph
         this.board = board;
         opponent = board.spelare[1];
 
-        Edges = new List<Edge>();
         Vertices = new List<Vertex>();
 
         boardWidth = board.horisontellaLångaVäggar.GetLength(0) + 1;
@@ -30,6 +28,19 @@ class Graph
 
         wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
         wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
+    }
+
+    public int EdgeCount()
+    {
+        int count = 0;
+        foreach (Vertex vertex in Vertices)
+        {
+            foreach (Vertex edge in vertex.Neighbours)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Vertex AtPos(int x, int y)
@@ -83,7 +94,7 @@ class Graph
             vertex.H = float.PositiveInfinity;
         }
     }
-    public void SetEdgeWeight()
+    public void SetEdgeWeight(bool useWeight)
     {
         // Set the weight of each unique edge depending on number of paths available
         for (int y = 0; y < boardHeight; ++y)
@@ -96,7 +107,10 @@ class Graph
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    edge.Weight = 1 + ((4.0f - edge.To.EdgeCount) * (opponent.antalVäggar / 10.0f) * AI_Data.edgeWeightFactor);
+                    if (useWeight)
+                        edge.Weight = 1 + ((4.0f - edge.To.EdgeCount) * (opponent.antalVäggar / 10.0f) * AI_Data.edgeWeightFactor);
+                    else
+                        edge.Weight = 1;
                 }
             }
         }
@@ -144,7 +158,7 @@ class Graph
                             if (!addEdge) break;
                         }
 
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
+                        if (addEdge) new Edge(vertex, neighbour);
                     }
                 }
                 for (int j = -1; j <= 1; j += 2) //Top and Bottom
@@ -168,76 +182,78 @@ class Graph
                             if (!addEdge) break;
                         }
 
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
+                        if (addEdge) new Edge(vertex, neighbour);
                     }
                 }
             }
         }
     }
 
-    /// <summary>
-    /// Generate custom graph
-    /// </summary>
-    public void GenerateGraph(bool[,] verticalWalls, bool[,] horizontalWalls)
+    public void AddWall(bool wallType, int x, int y)
     {
-        AddVertices();
-        AddEdges(verticalWalls, horizontalWalls);
-    }
-    private void AddEdges(bool[,] verticalWalls, bool[,] horizontalWalls)
-    {
-        for (int y = 0; y < boardHeight; ++y) // Add all edges
+        // wallType = true;  Vertical wall
+        // wallType = false; Horizontal wall
+
+        List<Vertex> vertices = new List<Vertex>();
+        for (int i = 0; i < 2; ++i)
         {
-            for (int x = 0; x < boardWidth; ++x)
+            for (int j = 0; j < 2; ++j)
             {
-                for (int i = -1; i <= 1; i += 2) // Left and Right
+                if (wallType)
                 {
-                    if (WithinBounds((x + i), y, boardWidth, boardHeight))
-                    {
-                        Vertex vertex = AtPos(x, y);
-                        Vertex neighbour = AtPos(x + i, y);
-
-                        int xPos = x;
-                        int yPos = y - 1;
-
-                        if (i < 0 && x > 0) --xPos;
-
-                        bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int k = 0; k < 2; ++k)
-                        {
-                            if (WithinBounds(xPos, yPos + k, wallLengthX, wallLengthY))
-                                addEdge = !verticalWalls[xPos, yPos + k];
-
-                            if (!addEdge) break;
-                        }
-
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
-                    }
+                    if (WithinBounds(x + i, y + j, boardWidth, boardHeight))
+                        vertices.Add(AtPos(x + i, y + j));
                 }
-                for (int j = -1; j <= 1; j += 2) //Top and Bottom
+                else
                 {
-                    if (WithinBounds(x, (y + j), boardWidth, boardHeight))
+                    if (WithinBounds(x + j, y + i, boardWidth, boardHeight))
+                        vertices.Add(AtPos(x + j, y + i));
+                }
+            }
+        }
+
+        for (int i = 0; i < vertices.Count; ++i)
+        {
+            if (vertices[i].Neighbours.Contains(vertices[(i + 2) % 4]))
+            {
+                foreach (Edge edge in vertices[i].Edges)
+                {
+                    if (edge.To == vertices[(i + 2) % 4])
                     {
-                        Vertex vertex = AtPos(x, y);
-                        Vertex neighbour = AtPos(x, y + j);
-
-                        int xPos = x - 1;
-                        int yPos = y;
-
-                        if (j < 0 && y > 0) --yPos;
-
-                        bool addEdge = true; // Don't add edge if wall between vertices
-                        for (int k = 0; k < 2; ++k)
-                        {
-                            if (WithinBounds(xPos + k, yPos, wallLengthX, wallLengthY))
-                                addEdge = !horizontalWalls[xPos + k, yPos];
-
-                            if (!addEdge) break;
-                        }
-
-                        if (addEdge) Edges.Add(new Edge(vertex, neighbour));
+                        vertices[i].RemoveEdge(edge);
+                        break;
                     }
                 }
             }
+        }
+    }
+    public void RemoveWall(bool wallType, int x, int y)
+    {
+        // wallType = true;  Vertical wall
+        // wallType = false; Horizontal wall
+
+        List<Vertex> vertices = new List<Vertex>();
+        for (int i = 0; i < 2; ++i)
+        {
+            for (int j = 0; j < 2; ++j)
+            {
+                if (wallType)
+                {
+                    if (WithinBounds(x + i, y + j, boardWidth, boardHeight))
+                        vertices.Add(AtPos(x + i, y + j));
+                }
+                else
+                {
+                    if (WithinBounds(x + j, y + i, boardWidth, boardHeight))
+                        vertices.Add(AtPos(x + j, y + i));
+                }
+            }
+        }
+
+        for (int i = 0; i < vertices.Count; ++i)
+        {
+            if (!vertices[i].Neighbours.Contains(vertices[(i + 2) % 4]))
+                new Edge(vertices[i], vertices[(i + 2) % 4]);
         }
     }
 }

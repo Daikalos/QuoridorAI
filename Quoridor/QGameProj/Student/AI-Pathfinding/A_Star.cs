@@ -4,31 +4,35 @@ using System.Linq;
 static class A_Star
 {
     // Modified to allow multiple goal vertices, as quoridor has it
-    public static List<Vertex> PathTo(Graph graph, Vertex start, params Vertex[] end)
+    // Done by doing reverse A*, we start on any goal and go to player
+
+    public static List<Vertex> PathTo(Graph graph, bool useWeight, Vertex goal, params Vertex[] starts)
     {
         PriorityQueue<Vertex> open = new PriorityQueue<Vertex>();
 
         graph.InitializeVertices();
-        graph.SetEdgeWeight();
+        graph.SetEdgeWeight(useWeight);
 
-        Vertex current = start;
-        open.Enqueue(current, current.F);
+        for (int i = 0; i < starts.Length; i++)
+        {
+            Vertex start = starts[i];
 
-        current.G = 0;
+            start.G = 0;
+            start.H = 0;
 
-        Vertex closestEnd = end.OrderBy(
-            v => Graph.Distance(start, v)).FirstOrDefault(); // Which goal to prioritize search for
+            open.Enqueue(start, start.F);
+        }
 
         while (open.Count > 0)
         {
-            current = open.Dequeue();
+            Vertex current = open.Dequeue();
 
             if (!current.IsVisited)
             {
                 current.IsVisited = true;
 
-                if (end.Contains(current))
-                    return FindPath(start, current);
+                if (current == goal)
+                    return FindPath(current, starts);
 
                 foreach (Edge edge in current.Edges)
                 {
@@ -40,7 +44,7 @@ static class A_Star
                         neighbour.Parent = current;
 
                         neighbour.G = gScore;
-                        neighbour.H = Graph.Distance(neighbour, closestEnd);
+                        neighbour.H = Graph.Distance(neighbour, goal);
 
                         if (!open.Contains(neighbour))
                             open.Enqueue(neighbour, neighbour.F);
@@ -52,19 +56,18 @@ static class A_Star
         return new List<Vertex>(); // Return empty path if none is found
     } 
 
-    private static List<Vertex> FindPath(Vertex start, Vertex end) // Reconstruct path
+    private static List<Vertex> FindPath(Vertex goal, params Vertex[] starts) // Reconstruct path
     {
         List<Vertex> path = new List<Vertex>();
-        Vertex current = end;
+        Vertex current = goal;
 
-        while (current != start)
+        while (!starts.Contains(current))
         {
             path.Add(current);
             current = current.Parent;
         }
 
-        path.Add(start);
-        path.Reverse();
+        path.Add(current);
 
         return path;
     }
