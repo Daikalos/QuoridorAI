@@ -12,7 +12,7 @@ class Agent : BaseAgent
 
     public Agent() {}
 
-    public override Drag SökNästaDrag(SpelBräde bräde) 
+    public override Drag SökNästaDrag(SpelBräde bräde) // Recommended for advanced rules
     {
         Spelare player = bräde.spelare[0];
         Spelare opponent = bräde.spelare[1];
@@ -24,6 +24,7 @@ class Agent : BaseAgent
 
         Graph graph = new Graph(bräde); // Generate a graph over map
         graph.GenerateGraph();
+        graph.SetEdgeWeight();
 
         // Use A* to find shortest path
         List<Vertex> plyPath = A_Star.PathTo(graph, true,
@@ -62,6 +63,8 @@ class Agent : BaseAgent
 
         return move;
     }
+
+
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)
     {

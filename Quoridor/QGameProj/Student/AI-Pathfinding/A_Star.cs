@@ -4,14 +4,13 @@ using System.Linq;
 static class A_Star
 {
     // Modified to allow multiple goal vertices, as quoridor has it
-    // Done by doing reverse A*, we start on any goal and go to player
+    // Done by doing reverse A*, we start from all goals and go to player as destination
 
     public static List<Vertex> PathTo(Graph graph, bool useWeight, Vertex goal, params Vertex[] starts)
     {
         PriorityQueue<Vertex> open = new PriorityQueue<Vertex>();
 
         graph.InitializeVertices();
-        graph.SetEdgeWeight(useWeight);
 
         for (int i = 0; i < starts.Length; i++)
         {
@@ -38,7 +37,9 @@ static class A_Star
                 {
                     Vertex neighbour = edge.To;
 
-                    float gScore = current.G + edge.Weight;
+                    float edgeWeight = (useWeight) ? edge.Weight : 1;
+                    float gScore = current.G + edgeWeight;
+
                     if (gScore < neighbour.G)
                     {
                         neighbour.Parent = current;

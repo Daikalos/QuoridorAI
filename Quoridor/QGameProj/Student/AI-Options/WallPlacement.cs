@@ -15,8 +15,8 @@ class WallPlacement
     // Find which path is the longest and use it to determine best placement
     private List<Tuple<Drag, int>> bestMoves;
 
-    private bool[,] wallsVert;
-    private bool[,] wallsHori;
+    private readonly bool[,] wallsVert;
+    private readonly bool[,] wallsHori;
 
     private bool prioDef;
 
@@ -49,16 +49,16 @@ class WallPlacement
         {
             TestWallPlacement(i, 0, 0);
 
-            for (int j = -3; j <= 3; ++j)
+            for (int j = -2; j <= 2; ++j)
                 if (j != 0) TestWallPlacement(i, j, 0);
 
-            for (int k = -3; k <= 3; ++k)
+            for (int k = -2; k <= 2; ++k)
                 if (k != 0) TestWallPlacement(i, 0, k);
 
-            for (int l = -3; l <= 3; ++l)
+            for (int l = -2; l <= 2; ++l)
                 if (l != 0) TestWallPlacement(i, l, l);
 
-            for (int l = -3; l <= 3; ++l)
+            for (int l = -2; l <= 2; ++l)
                 if (l != 0) TestWallPlacement(i, -l, l);
         }
 

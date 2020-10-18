@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 class Vertex
 {
-    public List<Vertex> Neighbours { get; private set; }
+    public List<Vertex> Neighbours => Edges.Select(e => e.To).ToList();
     public List<Edge> Edges { get; private set; }
 
     public Vertex Parent { get; set; }
@@ -21,18 +22,12 @@ class Vertex
     {
         Position = pos;
 
-        Neighbours = new List<Vertex>();
         Edges = new List<Edge>();
 
         IsVisited = false;
 
         G = float.PositiveInfinity;
         H = float.PositiveInfinity;
-    }
-
-    public void AddNeighbour(Vertex vertex)
-    {
-        Neighbours.Add(vertex);
     }
 
     public void AddEdge(Edge edge)
@@ -42,7 +37,6 @@ class Vertex
 
     public void RemoveEdge(Edge edge)
     {
-        Neighbours.Remove(edge.To); // No longer any edge to this neighbour, remove it
         Edges.Remove(edge);
     }
 }

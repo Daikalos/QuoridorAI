@@ -11,7 +11,6 @@
         To = to;
         Weight = weight;
 
-        from.AddNeighbour(to);
         from.AddEdge(this);
     }
 }

@@ -8,7 +8,7 @@ class Graph
     private SpelBräde board;
     private Spelare opponent;
 
-    private List<Vertex> Vertices;
+    private Vertex[] Vertices;
 
     public int boardWidth { get; private set; }
     public int boardHeight { get; private set; }
@@ -21,26 +21,13 @@ class Graph
         this.board = board;
         opponent = board.spelare[1];
 
-        Vertices = new List<Vertex>();
-
         boardWidth = board.horisontellaLångaVäggar.GetLength(0) + 1;
         boardHeight = board.horisontellaLångaVäggar.GetLength(1) + 1;
 
         wallLengthX = board.horisontellaLångaVäggar.GetLength(0);
         wallLengthY = board.horisontellaLångaVäggar.GetLength(1);
-    }
 
-    public int EdgeCount()
-    {
-        int count = 0;
-        foreach (Vertex vertex in Vertices)
-        {
-            foreach (Vertex edge in vertex.Neighbours)
-            {
-                count++;
-            }
-        }
-        return count;
+        Vertices = new Vertex[boardWidth * boardHeight];
     }
 
     public Vertex AtPos(int x, int y)
@@ -63,9 +50,8 @@ class Graph
 
     public static float Distance(Vertex from, Vertex to)
     {
-        return (float)Math.Sqrt(
-            Math.Pow(from.Position.X - to.Position.X, 2) +
-            Math.Pow(from.Position.Y - to.Position.Y, 2));
+        return Math.Abs(from.Position.X - to.Position.X) +
+               Math.Abs(from.Position.Y - to.Position.Y); // Manhattan Distance
     }
 
     public Vertex[] PlayerGoal()
@@ -94,7 +80,7 @@ class Graph
             vertex.H = float.PositiveInfinity;
         }
     }
-    public void SetEdgeWeight(bool useWeight)
+    public void SetEdgeWeight()
     {
         // Set the weight of each unique edge depending on number of paths available
         for (int y = 0; y < boardHeight; ++y)
@@ -107,10 +93,7 @@ class Graph
                     if (vertex.EdgeCount == 0)
                         break;
 
-                    if (useWeight)
-                        edge.Weight = 1 + ((4.0f - edge.To.EdgeCount) * (opponent.antalVäggar / 10.0f) * AI_Data.edgeWeightFactor);
-                    else
-                        edge.Weight = 1;
+                    edge.Weight = 1 + ((4.0f - edge.To.EdgeCount) * (opponent.antalVäggar / 10.0f) * AI_Data.edgeWeightFactor);
                 }
             }
         }
@@ -127,7 +110,7 @@ class Graph
         {
             for (int x = 0; x < boardWidth; x++)
             {
-                Vertices.Add(new Vertex(new Point(x, y)));
+                Vertices[x + y * boardWidth] = new Vertex(new Point(x, y));
             }
         }
     }

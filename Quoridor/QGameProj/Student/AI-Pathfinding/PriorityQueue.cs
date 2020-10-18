@@ -19,8 +19,8 @@ class PriorityQueue <T> // Min Heap
 
     public int Count => priorityQueue.Count;
     public int Parent(int pos) => (pos - 1) / 2;
-    public int Left(int pos) => (2 * pos) + 1;
-    public int Right(int pos) => (2 * pos) + 2;
+    public int Left(int pos)   => (2 * pos) + 1;
+    public int Right(int pos)  => (2 * pos) + 2;
 
     private List<Item> priorityQueue;
 
@@ -45,7 +45,7 @@ class PriorityQueue <T> // Min Heap
         priorityQueue[0] = priorityQueue[Count - 1]; // Replace root with element at end
         priorityQueue.RemoveAt(Count - 1);           // Remove element at end
 
-        MoveDown(0); // After root is removed, move it down
+        MoveDown(0); // After previous root is removed, move the current one down
 
         return root.item;
     }

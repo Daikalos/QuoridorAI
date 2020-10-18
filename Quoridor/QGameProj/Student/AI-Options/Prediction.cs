@@ -6,11 +6,10 @@ class Prediction
 {
     private Graph graph;
 
-    private Spelare player;
     private Spelare opponent;
 
-    private List<Vertex> oppPath;
     private List<Vertex> plyPath;
+    private List<Vertex> oppPath;
 
     // Find which path is the longest and use it to determine worst placement for player
     private List<Tuple<Drag, int>> bestMoves;
@@ -18,24 +17,23 @@ class Prediction
     // Player's next evaluated position
     private Point playerPos;
 
-    private bool[,] wallsVert;
-    private bool[,] wallsHori;
+    private readonly bool[,] wallsVert;
+    private readonly bool[,] wallsHori;
 
     public Prediction(SpelBräde board, Graph graph, Point playerPos)
     {
         this.graph = graph;
         this.playerPos = playerPos;
 
-        player = board.spelare[0];
         opponent = board.spelare[1];
-
-        oppPath = A_Star.PathTo(graph, false,
-            graph.AtPos(opponent.position),
-            graph.OpponentGoal());
 
         plyPath = A_Star.PathTo(graph, false,
             graph.AtPos(playerPos),
             graph.PlayerGoal());
+
+        oppPath = A_Star.PathTo(graph, false,
+            graph.AtPos(opponent.position),
+            graph.OpponentGoal());
 
         wallsVert = board.vertikalaLångaVäggar;
         wallsHori = board.horisontellaLångaVäggar;
@@ -50,16 +48,16 @@ class Prediction
         {
             TestWallPlacement(i, 0, 0);
 
-            for (int j = -3; j <= 3; ++j)
+            for (int j = -2; j <= 2; ++j)
                 if (j != 0) TestWallPlacement(i, j, 0);
 
-            for (int k = -3; k <= 3; ++k)
+            for (int k = -2; k <= 2; ++k)
                 if (k != 0) TestWallPlacement(i, 0, k);
 
-            for (int l = -3; l <= 3; ++l)
+            for (int l = -2; l <= 2; ++l)
                 if (l != 0) TestWallPlacement(i, l, l);
 
-            for (int l = -3; l <= 3; ++l)
+            for (int l = -2; l <= 2; ++l)
                 if (l != 0) TestWallPlacement(i, -l, l);
         }
 
