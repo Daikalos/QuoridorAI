@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 
 class PriorityQueue <T> // Min Heap
 {

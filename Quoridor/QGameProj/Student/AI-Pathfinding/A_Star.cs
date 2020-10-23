@@ -1,20 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
 
 static class A_Star
 {
     // Modified to allow multiple goal vertices, as quoridor has it
     // Done by doing reverse A*, we start from all goals and go to player as destination
 
-    public static List<Vertex> PathTo(Graph graph, bool useWeight, Vertex goal, params Vertex[] starts)
+    public static List<Vertex> PathTo(Graph graph, bool useWeight, Vertex goal, params Vertex[] outsets)
     {
         PriorityQueue<Vertex> open = new PriorityQueue<Vertex>();
 
         graph.InitializeVertices();
 
-        for (int i = 0; i < starts.Length; i++)
+        for (int i = 0; i < outsets.Length; i++)
         {
-            Vertex start = starts[i];
+            Vertex start = outsets[i];
 
             start.G = 0;
             start.H = 0;
@@ -31,7 +31,7 @@ static class A_Star
                 current.IsVisited = true;
 
                 if (current == goal)
-                    return FindPath(current, starts);
+                    return FindPath(current, outsets);
 
                 foreach (Edge edge in current.Edges)
                 {
@@ -57,12 +57,12 @@ static class A_Star
         return new List<Vertex>(); // Return empty path if none is found
     } 
 
-    private static List<Vertex> FindPath(Vertex goal, params Vertex[] starts) // Reconstruct path
+    private static List<Vertex> FindPath(Vertex goal, params Vertex[] outsets) // Reconstruct path
     {
         List<Vertex> path = new List<Vertex>();
         Vertex current = goal;
 
-        while (!starts.Contains(current))
+        while (!outsets.Contains(current))
         {
             path.Add(current);
             current = current.Parent;

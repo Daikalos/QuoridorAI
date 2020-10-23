@@ -3,14 +3,17 @@ using Microsoft.Xna.Framework;
 
 class MoveOver
 {
-    private List<Vertex> plyPath; // Player Path
+    private readonly Graph graph;
 
-    public MoveOver(List<Vertex> plyPath)
+    private readonly List<Vertex> plyPath; // Player Path
+
+    public MoveOver(Graph graph, List<Vertex> plyPath)
     {
+        this.graph = graph;
         this.plyPath = plyPath;
     }
 
-    public Point MoveOverOpponent(Graph graph, Point playerPos, Point opponentPos)
+    public Point MoveOverOpponent(Point playerPos, Point opponentPos)
     {
         Point offset = opponentPos - playerPos;
         Point desiredPos = playerPos + offset;
@@ -28,7 +31,7 @@ class MoveOver
         Vertex oppVertex = graph.AtPos(opponentPos);
 
         // If there is no path to desired position
-        if (!Graph.WithinBounds(desiredPos, graph.boardWidth, graph.boardHeight) || !oppVertex.Neighbours.Contains(graph.AtPos(desiredPos)))
+        if (!graph.WithinBoard(desiredPos) || !oppVertex.Neighbours.Contains(graph.AtPos(desiredPos)))
         {
             List<Vertex> desVertices = new List<Vertex>();
 

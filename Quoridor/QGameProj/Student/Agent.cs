@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 class Agent : BaseAgent 
 {
@@ -23,6 +23,7 @@ class Agent : BaseAgent
         Drag move = new Drag();
 
         Graph graph = new Graph(bräde); // Generate a graph over map
+
         graph.GenerateGraph();
         graph.SetEdgeWeight();
 
@@ -38,7 +39,7 @@ class Agent : BaseAgent
 
         // If desired position is on the opponents position
         if (bräde.avanceradeRegler && desiredPos == opponentPos)
-            desiredPos = new MoveOver(plyPath).MoveOverOpponent(graph, playerPos, opponentPos);
+            desiredPos = new MoveOver(graph, plyPath).MoveOverOpponent(playerPos, opponentPos);
 
         move.typ = Typ.Flytta;
         move.point = desiredPos;
