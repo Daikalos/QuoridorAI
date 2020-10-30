@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 
 class WallPlacement
 {
+    private readonly SpelBräde board;
     private readonly Graph graph;
 
     private readonly Spelare player;
@@ -18,10 +19,11 @@ class WallPlacement
     private List<Vertex> plyPath;
 
     // Find which path is the longest and use it to determine best placement
-    private List<Tuple<Drag, int>> bestMoves;
+    private Tuple<Drag, int> bestMove;
 
     public WallPlacement(SpelBräde board, Graph graph, bool prioDef)
     {
+        this.board = board;
         this.graph = graph;
         this.prioDef = prioDef;
 
@@ -39,7 +41,7 @@ class WallPlacement
         wallsVert = board.vertikalaLångaVäggar;
         wallsHori = board.horisontellaLångaVäggar;
 
-        bestMoves = new List<Tuple<Drag, int>>();
+        bestMove = new Tuple<Drag, int>(new Drag(), 0);
     }
 
     public void PlaceWall(ref Drag move)
@@ -57,8 +59,8 @@ class WallPlacement
         }
 
         // When all suitable placements has been evaluated, return best placement for wall
-        if (bestMoves.Count > 0)
-            move = BestPlacement();
+        if (bestMove.Item2 > 0)
+            move = bestMove.Item1;
     }
 
     private void TestWallPlacement(int i, int j, int k)
@@ -83,15 +85,18 @@ class WallPlacement
         {
             if (!PlaceVerticalWall(placeAt, out x, out y))
                 return;
+
+            if (wallsVert[x, y] || board.avanceradeRegler && wallsHori[x, y])
+                return;
         }
         else
         {
             if (!PlaceHorizontalWall(placeAt, out x, out y))
                 return;
-        }
 
-        if (wallsVert[x, y] || wallsHori[x, y])
-            return;
+            if (board.avanceradeRegler && wallsVert[x, y] || wallsHori[x, y])
+                return;
+        }
 
         graph.AddWall(placeVertical, x, y);
 
@@ -116,11 +121,14 @@ class WallPlacement
         {
             if (oppPathCount > 0)
             {
-                bestMoves.Add(new Tuple<Drag, int>(new Drag
+                if (oppPathCount > bestMove.Item2)
                 {
-                    point = new Point(x, y),
-                    typ = (placeVertical) ? Typ.Vertikal : Typ.Horisontell
-                }, oppPathCount));
+                    bestMove = new Tuple<Drag, int>(new Drag
+                    {
+                        point = new Point(x, y),
+                        typ = (placeVertical) ? Typ.Vertikal : Typ.Horisontell
+                    }, oppPathCount);
+                }
             }
         }
     }
@@ -133,7 +141,7 @@ class WallPlacement
         if (x > 0) x--;
         if (y > 0) y--;
 
-        if (!VerticalWallViable(x, y))
+        if (!VerticalWallViable(x, y)) // Return true if it can be placed
             return false;
 
         return true;
@@ -146,7 +154,7 @@ class WallPlacement
         if (x > 0) x--;
         if (y > 0) y--;
 
-        if (!HorizontalWallViable(x, y))
+        if (!HorizontalWallViable(x, y)) // Return true if it can be placed
             return false;
 
         return true;
@@ -181,22 +189,5 @@ class WallPlacement
         }
 
         return true;
-    }
-
-    private Drag BestPlacement()
-    {
-        Drag move = new Drag();
-
-        int largest = 0;
-        foreach (Tuple<Drag, int> bestMove in bestMoves)
-        {
-            if (bestMove.Item2 > largest)
-            {
-                move = bestMove.Item1;
-                largest = bestMove.Item2;
-            }
-        }
-
-        return move;
     }
 }

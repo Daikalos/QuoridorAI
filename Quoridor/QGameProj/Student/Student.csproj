@@ -50,7 +50,9 @@
     <Compile Include="AI-Graph\Graph.cs" />
     <Compile Include="AI-Graph\Edge.cs" />
     <Compile Include="AI-Graph\Vertex.cs" />
-    <Compile Include="AI-Pathfinding\PriorityQueue.cs" />
+    <Compile Include="AI-PriorityQueue\MaxHeap.cs" />
+    <Compile Include="AI-PriorityQueue\MinHeap.cs" />
+    <Compile Include="AI-PriorityQueue\PriorityQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -66,39 +66,39 @@ class MoveOver
     private Point SuitableVertex(List<Vertex> desVertices)
     {
         // If the vertex we are trying to go to is already contained in path, go to it
-        for (int i = 0; i < plyPath.Count; i++)
+        for (int i = 0; i < desVertices.Count; i++) // At most 3
         {
-            for (int j = 0; j < desVertices.Count; j++) // At most 3
+            if (plyPath.Count < 3)
+                break;
+
+            if (plyPath[2] == desVertices[i])
             {
-                if (plyPath[i] == desVertices[j])
-                {
-                    return plyPath[i].Position;
-                }
+                return plyPath[2].Position;
             }
         }
 
         // Else return with going to the vertex closest to goal
-        return Min(desVertices.ToArray()).Position;
+        return Min(desVertices);
     }
 
     /// <summary>
     /// Return vertex of closest distance to goal
     /// </summary>
-    private Vertex Min(params Vertex[] vertices)
+    private Point Min(List<Vertex> desVertices)
     {
-        Vertex closest = vertices[0];
+        Vertex closest = desVertices[0];
         float smallest = float.MaxValue;
 
-        for (int i = 0; i < vertices.Length; i++)
+        for (int i = 0; i < desVertices.Count; i++)
         {
-            float distance = Graph.Distance(vertices[i], plyPath[plyPath.Count - 1]);
+            float distance = Graph.Distance(desVertices[i], plyPath[plyPath.Count - 1]);
             if (distance < smallest)
             {
-                closest = vertices[i];
+                closest = desVertices[i];
                 smallest = distance;
             }
         }
 
-        return closest;
+        return closest.Position;
     }
 }

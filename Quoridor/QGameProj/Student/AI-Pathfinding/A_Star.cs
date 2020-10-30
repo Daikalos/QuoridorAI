@@ -8,9 +8,9 @@ static class A_Star
 
     public static List<Vertex> PathTo(Graph graph, bool useWeight, Vertex goal, params Vertex[] outsets)
     {
-        PriorityQueue<Vertex> open = new PriorityQueue<Vertex>();
+        PriorityQueue<Vertex> open = new MinHeap<Vertex>();
 
-        graph.InitializeVertices();
+        graph.InitializeVertices(); // Indirectly makes this algorithm O(N)
 
         for (int i = 0; i < outsets.Length; i++)
         {
@@ -19,7 +19,7 @@ static class A_Star
             start.G = 0;
             start.H = 0;
 
-            open.Enqueue(start, start.F);
+            open.Enqueue(start, 0);
         }
 
         while (open.Count > 0)

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 
 class Prediction
 {
+    private readonly SpelBräde board;
     private readonly Graph graph;
     private readonly Spelare opponent;
 
@@ -17,10 +18,11 @@ class Prediction
     private List<Vertex> oppPath;
 
     // Find which path is the longest and use it to determine best placement against player
-    private List<Tuple<Drag, int>> bestMoves;
+    private Tuple<Drag, int> bestMove;
 
     public Prediction(SpelBräde board, Graph graph, Point playerPos)
     {
+        this.board = board;
         this.graph = graph;
         this.playerPos = playerPos;
 
@@ -37,7 +39,7 @@ class Prediction
         wallsVert = board.vertikalaLångaVäggar;
         wallsHori = board.horisontellaLångaVäggar;
 
-        bestMoves = new List<Tuple<Drag, int>>();
+        bestMove = new Tuple<Drag, int>(new Drag(), 0);
     }
 
     public void OppWallPlacement(ref Drag move)
@@ -55,12 +57,11 @@ class Prediction
         }
 
         // When all placements has been evaluated, return best placement against the player
-        if (bestMoves.Count > 0)
+        if (bestMove.Item2 > 0)
         {
-            Drag bestMove = BestPlacement();
             Drag newMove = new Drag();
 
-            if (!BlockPlacementViable(bestMove, ref newMove))
+            if (!BlockPlacementViable(bestMove.Item1, ref newMove))
                 return;
 
             int x = newMove.point.X, 
@@ -111,15 +112,18 @@ class Prediction
         {
             if (!PlaceVerticalWall(placeAt, out x, out y))
                 return;
+
+            if (wallsVert[x, y] || board.avanceradeRegler && wallsHori[x, y])
+                return;
         }
         else
         {
             if (!PlaceHorizontalWall(placeAt, out x, out y))
                 return;
-        }
 
-        if (wallsVert[x, y] || wallsHori[x, y])
-            return;
+            if (board.avanceradeRegler && wallsVert[x, y] || wallsHori[x, y])
+                return;
+        }
 
         graph.AddWall(placeVertical, x, y);
 
@@ -142,11 +146,14 @@ class Prediction
         // If this new path is much longer for player, then (x, y) is a suitable position for opponent to place a wall at
         if ((plyPathCount - oppPathCount) > AI_Data.predictionFreq)
         {
-            bestMoves.Add(new Tuple<Drag, int>(new Drag
+            if (plyPathCount > bestMove.Item2)
             {
-                point = new Point(x, y),
-                typ = (placeVertical) ? Typ.Vertikal : Typ.Horisontell
-            }, plyPathCount));
+                bestMove = new Tuple<Drag, int>(new Drag
+                {
+                    point = new Point(x, y),
+                    typ = (placeVertical) ? Typ.Vertikal : Typ.Horisontell
+                }, plyPathCount);
+            }
         }
     }
 
@@ -158,7 +165,7 @@ class Prediction
         if (x > 0) x--;
         if (y > 0) y--;
 
-        if (!VerticalWallViable(x, y))
+        if (!VerticalWallViable(x, y)) // Return true if it can be placed
             return false;
 
         return true;
@@ -171,7 +178,7 @@ class Prediction
         if (x > 0) x--;
         if (y > 0) y--;
 
-        if (!HorizontalWallViable(x, y))
+        if (!HorizontalWallViable(x, y)) // Return true if it can be placed
             return false;
 
         return true;
@@ -232,22 +239,5 @@ class Prediction
         }
 
         return false;
-    }
-
-    private Drag BestPlacement()
-    {
-        Drag move = new Drag();
-
-        int largest = 0;
-        foreach (Tuple<Drag, int> bestMove in bestMoves)
-        {
-            if (bestMove.Item2 > largest)
-            {
-                move = bestMove.Item1;
-                largest = bestMove.Item2;
-            }
-        }
-
-        return move;
     }
 }
