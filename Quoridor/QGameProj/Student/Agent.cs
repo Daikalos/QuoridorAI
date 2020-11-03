@@ -33,7 +33,7 @@ class Agent : BaseAgent
             graph.PlayerGoal());
 
         if (plyPath.Count == 0) // No valid path found to goal
-            throw new System.ArgumentOutOfRangeException();
+            throw new System.ArgumentOutOfRangeException("Path Invalid");
 
         Point desiredPos = plyPath[1].Position;
 
@@ -64,8 +64,6 @@ class Agent : BaseAgent
 
         return move;
     }
-
-
 
     public override Drag GörOmDrag(SpelBräde bräde, Drag drag)
     {

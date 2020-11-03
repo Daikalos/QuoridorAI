@@ -47,9 +47,9 @@ class Prediction
         // Iterate through every vertex on path
         for (int i = 0; i < plyPath.Count - 1; ++i)
         {
-            for (int j = -2; j <= 2; j++)
+            for (int j = -2; j <= 2; ++j)
             {
-                for (int k = -2; k <= 2; k++)
+                for (int k = -2; k <= 2; ++k)
                 {
                     TestWallPlacement(i, j, k);
                 }

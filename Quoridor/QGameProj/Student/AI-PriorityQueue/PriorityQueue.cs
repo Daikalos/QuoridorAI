@@ -22,14 +22,14 @@ abstract class PriorityQueue <T> // Min Heap
 
     protected List<Element> priorityQueue;
 
-    public PriorityQueue()
-    {
-        priorityQueue = new List<Element>();
-    }
-
     public T this[int i]
     {
         get { return priorityQueue[i].item; }
+    }
+
+    public PriorityQueue()
+    {
+        priorityQueue = new List<Element>();
     }
 
     public abstract void Enqueue(T Element, float priority);
